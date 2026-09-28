@@ -1,791 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta charset="UTF-8">
+<title>Student Data Verification</title>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
-    <title>Student Data Verification</title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
 
-    <!-- SheetJS for Excel export -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        color: #222;
+    }
 
+    .container {
+        max-width: 1400px;
+        margin: auto;
+        padding: 25px;
+    }
 
-    <style>
+    h1 {
+        margin-bottom: 5px;
+    }
 
-        * {
-            box-sizing: border-box;
+    .subtitle {
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    input[type="file"] {
+        margin: 10px 0;
+    }
+
+    button {
+        border: none;
+        padding: 9px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    button:hover {
+        opacity: 0.9;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-success {
+        background: #16a34a;
+        color: white;
+    }
+
+    .btn-warning {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .btn-danger {
+        background: #dc2626;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+    }
+
+    .btn-purple {
+        background: #7c3aed;
+        color: white;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .stat {
+        background: white;
+        padding: 18px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .stat h3 {
+        margin: 0;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .stat strong {
+        display: block;
+        font-size: 28px;
+        margin-top: 5px;
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 330px 1fr;
+        gap: 20px;
+    }
+
+    .student-list {
+        max-height: 650px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+
+    .student-item {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+    }
+
+    .student-item:hover {
+        background: #f1f5f9;
+    }
+
+    .student-item.active {
+        background: #dbeafe;
+    }
+
+    .student-name {
+        font-weight: bold;
+    }
+
+    .student-meta {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+    }
+
+    .status {
+        display: inline-block;
+        margin-top: 6px;
+        padding: 3px 7px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .status-unchecked {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .status-verified {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-corrected {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-buttons button {
+        font-size: 12px;
+        padding: 7px 10px;
+    }
+
+    .field {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 12px;
+    }
+
+    .field-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .field-title {
+        font-weight: bold;
+    }
+
+    .field-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    .field-actions button {
+        font-size: 12px;
+        padding: 6px 9px;
+    }
+
+    .field input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: #f8fafc;
+    }
+
+    .field input.editable {
+        background: white;
+        border-color: #f59e0b;
+    }
+
+    .field.correct {
+        border-left: 5px solid #16a34a;
+    }
+
+    .field.incorrect {
+        border-left: 5px solid #dc2626;
+    }
+
+    .verification-summary {
+        padding: 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .export-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .top-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .notice {
+        padding: 12px;
+        border-radius: 8px;
+        background: #eff6ff;
+        color: #1e40af;
+        margin-top: 10px;
+    }
+
+    @media(max-width: 900px) {
+        .main-grid {
+            grid-template-columns: 1fr;
         }
-
-
-        body {
-
-            margin: 0;
-
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
-
-            background: #f4f6f8;
-
-            color: #222;
-
-        }
-
-
-        .container {
-
-            max-width: 1400px;
-
-            margin: auto;
-
-            padding: 25px;
-
-        }
-
-
-        h1 {
-
-            margin-bottom: 5px;
-
-        }
-
-
-        .subtitle {
-
-            color: #666;
-
-            margin-bottom: 25px;
-
-        }
-
-
-        .card {
-
-            background: white;
-
-            padding: 20px;
-
-            border-radius: 10px;
-
-            margin-bottom: 20px;
-
-            box-shadow:
-                0 2px 8px
-                rgba(0,0,0,0.08);
-
-        }
-
-
-        input[type="file"] {
-
-            margin: 10px 0;
-
-        }
-
-
-        button {
-
-            border: none;
-
-            padding: 9px 14px;
-
-            border-radius: 6px;
-
-            cursor: pointer;
-
-            font-weight: 600;
-
-        }
-
-
-        button:hover {
-
-            opacity: 0.9;
-
-        }
-
-
-        button:disabled {
-
-            opacity: 0.5;
-
-            cursor: not-allowed;
-
-        }
-
-
-        .btn-primary {
-
-            background: #2563eb;
-
-            color: white;
-
-        }
-
-
-        .btn-success {
-
-            background: #16a34a;
-
-            color: white;
-
-        }
-
-
-        .btn-warning {
-
-            background: #f59e0b;
-
-            color: white;
-
-        }
-
-
-        .btn-danger {
-
-            background: #dc2626;
-
-            color: white;
-
-        }
-
-
-        .btn-secondary {
-
-            background: #64748b;
-
-            color: white;
-
-        }
-
-
-        .btn-purple {
-
-            background: #7c3aed;
-
-            color: white;
-
-        }
-
-
-        .hidden {
-
-            display: none !important;
-
-        }
-
-
-        /* ================================
-           STATISTICS
-        ================================= */
 
         .stats {
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(4, 1fr);
-
-            gap: 15px;
-
-            margin-bottom: 20px;
-
+            grid-template-columns: repeat(2, 1fr);
         }
-
-
-        .stat {
-
-            background: white;
-
-            padding: 18px;
-
-            border-radius: 10px;
-
-            box-shadow:
-                0 2px 8px
-                rgba(0,0,0,0.06);
-
-        }
-
-
-        .stat h3 {
-
-            margin: 0;
-
-            font-size: 14px;
-
-            color: #666;
-
-        }
-
-
-        .stat strong {
-
-            display: block;
-
-            font-size: 28px;
-
-            margin-top: 5px;
-
-        }
-
-
-        /* ================================
-           MAIN GRID
-        ================================= */
-
-        .main-grid {
-
-            display: grid;
-
-            grid-template-columns:
-                330px 1fr;
-
-            gap: 20px;
-
-        }
-
-
-        /* ================================
-           STUDENT LIST
-        ================================= */
-
-        .student-list {
-
-            max-height: 650px;
-
-            overflow-y: auto;
-
-            border:
-                1px solid #ddd;
-
-            border-radius: 8px;
-
-        }
-
-
-        .student-item {
-
-            padding: 12px;
-
-            border-bottom:
-                1px solid #eee;
-
-            cursor: pointer;
-
-        }
-
-
-        .student-item:hover {
-
-            background: #f1f5f9;
-
-        }
-
-
-        .student-item.active {
-
-            background: #dbeafe;
-
-        }
-
-
-        .student-name {
-
-            font-weight: bold;
-
-        }
-
-
-        .student-meta {
-
-            font-size: 12px;
-
-            color: #666;
-
-            margin-top: 4px;
-
-        }
-
-
-        /* ================================
-           STATUS
-        ================================= */
-
-        .status {
-
-            display: inline-block;
-
-            margin-top: 6px;
-
-            padding: 3px 8px;
-
-            border-radius: 20px;
-
-            font-size: 11px;
-
-            font-weight: bold;
-
-        }
-
-
-        .status-unchecked {
-
-            background: #e5e7eb;
-
-            color: #374151;
-
-        }
-
-
-        .status-verified {
-
-            background: #dcfce7;
-
-            color: #166534;
-
-        }
-
-
-        .status-corrected {
-
-            background: #fef3c7;
-
-            color: #92400e;
-
-        }
-
-
-        /* ================================
-           SEARCH
-        ================================= */
-
-        .search-box {
-
-            width: 100%;
-
-            padding: 10px;
-
-            border:
-                1px solid #ccc;
-
-            border-radius: 6px;
-
-            margin-bottom: 10px;
-
-        }
-
-
-        .filter-buttons {
-
-            display: flex;
-
-            gap: 5px;
-
-            margin-bottom: 10px;
-
-            flex-wrap: wrap;
-
-        }
-
-
-        .filter-buttons button {
-
-            font-size: 12px;
-
-            padding: 7px 10px;
-
-        }
-
-
-        /* ================================
-           FIELDS
-        ================================= */
-
-        .field {
-
-            border:
-                1px solid #ddd;
-
-            border-radius: 8px;
-
-            padding: 15px;
-
-            margin-bottom: 12px;
-
-        }
-
-
-        .field-header {
-
-            display: flex;
-
-            justify-content:
-                space-between;
-
-            align-items:
-                center;
-
-            gap: 10px;
-
-            margin-bottom: 8px;
-
-        }
-
-
-        .field-title {
-
-            font-weight: bold;
-
-        }
-
-
-        .field-actions {
-
-            display: flex;
-
-            gap: 5px;
-
-        }
-
-
-        .field-actions button {
-
-            font-size: 12px;
-
-            padding: 6px 9px;
-
-        }
-
-
-        .field input {
-
-            width: 100%;
-
-            padding: 10px;
-
-            border:
-                1px solid #ccc;
-
-            border-radius: 5px;
-
-            background: #f1f5f9;
-
-        }
-
-
-        .field input.editable {
-
-            background: white;
-
-            border-color: #f59e0b;
-
-        }
-
-
-        .field.correct {
-
-            border-left:
-                5px solid #16a34a;
-
-        }
-
-
-        .field.incorrect {
-
-            border-left:
-                5px solid #dc2626;
-
-        }
-
-
-        /* ================================
-           SUMMARY
-        ================================= */
-
-        .verification-summary {
-
-            padding: 12px;
-
-            background: #f8fafc;
-
-            border-radius: 8px;
-
-            margin-bottom: 15px;
-
-        }
-
-
-        /* ================================
-           BUTTON GROUP
-        ================================= */
-
-        .export-buttons {
-
-            display: flex;
-
-            flex-wrap: wrap;
-
-            gap: 10px;
-
-        }
-
-
-        .top-actions {
-
-            display: flex;
-
-            flex-wrap: wrap;
-
-            gap: 10px;
-
-        }
-
-
-        /* ================================
-           NOTICE
-        ================================= */
-
-        .notice {
-
-            padding: 12px;
-
-            border-radius: 8px;
-
-            background: #eff6ff;
-
-            color: #1e40af;
-
-            margin-top: 15px;
-
-        }
-
-
-        /* ================================
-           RESPONSIVE
-        ================================= */
-
-        @media(max-width: 900px) {
-
-            .main-grid {
-
-                grid-template-columns: 1fr;
-
-            }
-
-
-            .stats {
-
-                grid-template-columns:
-                    repeat(2, 1fr);
-
-            }
-
-        }
-
-
-        @media(max-width: 600px) {
-
-            .container {
-
-                padding: 12px;
-
-            }
-
-
-            .stats {
-
-                grid-template-columns:
-                    1fr 1fr;
-
-            }
-
-
-            .field-header {
-
-                flex-direction:
-                    column;
-
-                align-items:
-                    flex-start;
-
-            }
-
-        }
-
-    </style>
-
+    }
+</style>
 </head>
-
 
 <body>
 
-
 <div class="container">
 
-
-    <!-- =========================================
-         HEADER
-    ========================================== -->
-
-    <h1>
-        Student Data Verification
-    </h1>
-
-
+    <h1>Student Data Verification</h1>
     <div class="subtitle">
-
-        Upload CSV → Check students →
-        Correct mistakes → Verify →
-        Download Excel reports
-
+        Upload CSV → Check students → Correct mistakes → Verify → Download reports
     </div>
 
-
-    <!-- =========================================
-         UPLOAD
-    ========================================== -->
-
+    <!-- UPLOAD -->
     <div class="card">
 
-        <h3>
-            1. Upload Original CSV
-        </h3>
+        <h3>1. Upload Original CSV</h3>
 
-
-        <input
-            type="file"
-            id="csvFile"
-            accept=".csv"
-        >
-
+        <input type="file" id="csvFile" accept=".csv">
 
         <br>
 
-
-        <button
-            class="btn-primary"
-            onclick="loadCSV()"
-        >
+        <button class="btn-primary" onclick="loadCSV()">
             Load CSV
         </button>
 
-
-        <button
-            class="btn-success"
-            onclick="startChecking()"
-            id="startBtn"
-            disabled
-        >
+        <button class="btn-success" onclick="startChecking()" id="startBtn" disabled>
             Start Checking
         </button>
-
 
         <div id="fileInfo"></div>
 
     </div>
 
 
-    <!-- =========================================
-         STATISTICS
-    ========================================== -->
-
-    <div
-        id="statsSection"
-        class="hidden"
-    >
+    <!-- STATS -->
+    <div id="statsSection" class="hidden">
 
         <div class="stats">
 
-
             <div class="stat">
-
-                <h3>
-                    Total Students
-                </h3>
-
-                <strong id="totalCount">
-                    0
-                </strong>
-
+                <h3>Total Students</h3>
+                <strong id="totalCount">0</strong>
             </div>
 
-
             <div class="stat">
-
-                <h3>
-                    Unchecked
-                </h3>
-
-                <strong id="uncheckedCount">
-                    0
-                </strong>
-
+                <h3>Unchecked</h3>
+                <strong id="uncheckedCount">0</strong>
             </div>
 
-
             <div class="stat">
-
-                <h3>
-                    Verified
-                </h3>
-
-                <strong id="verifiedCount">
-                    0
-                </strong>
-
+                <h3>Verified</h3>
+                <strong id="verifiedCount">0</strong>
             </div>
 
-
             <div class="stat">
-
-                <h3>
-                    Corrected
-                </h3>
-
-                <strong id="correctedCount">
-                    0
-                </strong>
-
+                <h3>Corrected</h3>
+                <strong id="correctedCount">0</strong>
             </div>
-
 
         </div>
 
     </div>
 
 
-    <!-- =========================================
-         CHECKING SECTION
-    ========================================== -->
-
-    <div
-        id="checkingSection"
-        class="hidden"
-    >
-
+    <!-- CHECKING AREA -->
+    <div id="checkingSection" class="hidden">
 
         <div class="main-grid">
 
-
-            <!-- =================================
-                 STUDENT LIST
-            ================================== -->
-
+            <!-- LEFT -->
             <div class="card">
 
-
-                <h3>
-                    Students
-                </h3>
-
+                <h3>Students</h3>
 
                 <input
                     type="text"
@@ -795,711 +368,448 @@
                     oninput="renderStudentList()"
                 >
 
-
                 <div class="filter-buttons">
-
 
                     <button
                         class="btn-secondary"
-                        onclick="setFilter('all')"
-                    >
+                        onclick="setFilter('all')">
                         All
                     </button>
 
-
                     <button
                         class="btn-secondary"
-                        onclick="setFilter('unchecked')"
-                    >
+                        onclick="setFilter('unchecked')">
                         Unchecked
                     </button>
 
-
                     <button
                         class="btn-success"
-                        onclick="setFilter('verified')"
-                    >
+                        onclick="setFilter('verified')">
                         Verified
                     </button>
 
-
                     <button
                         class="btn-warning"
-                        onclick="setFilter('corrected')"
-                    >
+                        onclick="setFilter('corrected')">
                         Corrected
                     </button>
 
-
                 </div>
 
-
-                <div
-                    id="studentList"
-                    class="student-list"
-                ></div>
-
+                <div id="studentList" class="student-list"></div>
 
             </div>
 
 
-            <!-- =================================
-                 STUDENT EDITOR
-            ================================== -->
-
+            <!-- RIGHT -->
             <div class="card">
-
 
                 <div id="editorEmpty">
 
-                    <h3>
-                        Select a student
-                    </h3>
+                    <h3>Select a student</h3>
 
                     <p>
-                        Select a student from the
-                        list to start verification.
+                        Select a student from the list to start verification.
                     </p>
 
                 </div>
 
 
-                <div
-                    id="editor"
-                    class="hidden"
-                >
-
+                <div id="editor" class="hidden">
 
                     <h2 id="studentTitle"></h2>
 
-
                     <div id="studentMeta"></div>
-
 
                     <br>
 
-
                     <div class="verification-summary">
 
-                        <strong>
-                            Important:
-                        </strong>
+                        <strong>Verification Rule:</strong>
 
-                        All fields are
-                        <strong>
-                            Correct by default
-                        </strong>.
+                        All fields are considered
+                        <strong>Correct by default</strong>.
 
                         Only click
-                        <strong>
-                            Incorrect
-                        </strong>
-                        when you find a mistake.
+                        <strong>Incorrect</strong>
+                        if you find a mistake.
 
                     </div>
 
 
-                    <div
-                        id="fieldsContainer"
-                    ></div>
+                    <div id="fieldsContainer"></div>
 
 
                     <div class="top-actions">
 
-
                         <button
                             class="btn-success"
-                            onclick="saveAndVerify()"
-                        >
+                            onclick="saveAndVerify()">
                             ✓ Save & Verify
                         </button>
 
-
                         <button
                             class="btn-secondary"
-                            onclick="cancelEditing()"
-                        >
+                            onclick="cancelEditing()">
                             Cancel
                         </button>
 
-
                     </div>
-
 
                 </div>
 
-
             </div>
 
-
         </div>
-
 
     </div>
 
 
-    <!-- =========================================
-         EXPORT SECTION
-    ========================================== -->
+    <!-- EXPORTS -->
+    <div id="exportSection" class="card hidden">
 
-    <div
-        id="exportSection"
-        class="card hidden"
-    >
-
-
-        <h3>
-            Download Results
-        </h3>
-
+        <h3>Download Results</h3>
 
         <p>
-            Download the verification results
-            as Excel files.
+            Download the verification results as Excel files.
         </p>
-
 
         <div class="export-buttons">
 
-
             <button
                 class="btn-danger"
-                onclick="exportIncorrect()"
-            >
+                onclick="exportIncorrect()">
                 Download Incorrect Details
             </button>
 
-
             <button
                 class="btn-warning"
-                onclick="exportCorrected()"
-            >
+                onclick="exportCorrected()">
                 Download Corrected Students
             </button>
 
-
-            <button
-                class="btn-purple"
-                onclick="exportVerifiedStudents()"
-            >
-                Download Verified Students
-            </button>
-
-
             <button
                 class="btn-primary"
-                onclick="exportComplete()"
-            >
+                onclick="exportComplete()">
                 Download Complete List
             </button>
 
+            <button
+                class="btn-purple"
+                onclick="exportVerifiedChecks()">
+                Download Verified Checks
+            </button>
 
             <button
                 class="btn-secondary"
-                onclick="exportProgress()"
-            >
+                onclick="exportProgress()">
                 Download Checking Progress
             </button>
 
-
         </div>
-
 
         <div class="notice">
 
-            <strong>
-                Verified Students
-            </strong>
-
-            contains complete details for
-            every student that has been checked.
-
-            Section is not included in this
-            report.
+            <strong>Verified Checks</strong> contains every student that
+            has been checked, including whether each individual field was
+            correct or corrected.
 
         </div>
 
-
     </div>
-
 
 </div>
 
 
-
 <script>
 
-
-// ============================================================
-// GLOBAL VARIABLES
-// ============================================================
-
-
 let originalHeaders = [];
-
 let students = [];
 
 let currentStudentIndex = null;
-
 let currentFilter = "all";
-
 
 
 // ============================================================
 // FIELD CONFIGURATION
 // ============================================================
 
-
 const fields = {
 
-
     studentName: {
-
         label: "Student Name",
-
         candidates: [
-
             "Student Name",
             "Name",
             "Student"
-
         ]
-
     },
 
-
     guardianName: {
-
         label: "Guardian Name",
-
         candidates: [
-
             "Guardian Name",
             "Parent Name",
             "Father Name",
             "Mother Name",
             "Guardian"
-
         ]
-
     },
 
-
     studentContact: {
-
         label: "Student Contact",
-
         candidates: [
-
             "Student Contact",
             "Student Phone",
             "Student Mobile",
             "Student Contact Number",
-            "Student Contact No",
             "Contact"
-
         ]
-
     },
 
-
     guardianContact: {
-
         label: "Guardian Contact",
-
         candidates: [
-
             "Guardian Contact",
             "Guardian Phone",
             "Guardian Mobile",
             "Guardian Contact Number",
-            "Guardian Contact No",
             "Parent Contact",
             "Parent Phone",
             "Parent Mobile",
             "Father Contact",
             "Mother Contact"
-
         ]
-
     },
-
 
     studentAddress: {
-
         label: "Student Address",
-
         candidates: [
-
             "Student Address",
-            "Student Location",
             "Address"
-
         ]
-
     },
 
-
     guardianAddress: {
-
         label: "Guardian Address",
-
         candidates: [
-
             "Guardian Address",
             "Parent Address",
             "Father Address",
             "Mother Address"
-
         ]
-
     },
-
 
     dob: {
-
         label: "DOB",
-
         candidates: [
-
             "DOB",
             "Date of Birth",
-            "Birth Date",
-            "Birthdate"
-
+            "Birth Date"
         ]
-
     },
-
 
     gender: {
-
         label: "Gender",
-
         candidates: [
-
             "Gender",
             "Sex"
-
         ]
-
     },
-
 
     grade: {
-
         label: "Grade",
-
         candidates: [
-
             "Grade",
             "Class"
-
         ]
-
     },
 
-
     section: {
-
         label: "Section",
-
         candidates: [
-
             "Section",
             "Sec"
-
         ]
-
     }
 
-
 };
-
 
 
 // ============================================================
 // NORMALIZE HEADER
 // ============================================================
 
-
 function normalizeHeader(value) {
 
     return String(value || "")
-
         .toLowerCase()
-
         .trim()
-
         .replace(/[’']/g, "")
-
         .replace(/[^a-z0-9]/g, "");
 
 }
-
 
 
 // ============================================================
 // FIND HEADER
 // ============================================================
 
-
 function findHeader(headers, candidates) {
 
+    const normalizedHeaders = headers.map(normalizeHeader);
 
-    const normalizedHeaders =
-        headers.map(normalizeHeader);
-
-
-    for (
-        const candidate
-        of candidates
-    ) {
-
+    for (const candidate of candidates) {
 
         const index =
             normalizedHeaders.indexOf(
                 normalizeHeader(candidate)
             );
 
-
         if (index !== -1) {
-
             return headers[index];
-
         }
-
     }
 
-
     return null;
-
 }
-
 
 
 // ============================================================
 // LOAD CSV
 // ============================================================
 
-
 function loadCSV() {
 
-
     const file =
-        document
-            .getElementById("csvFile")
-            .files[0];
-
+        document.getElementById("csvFile").files[0];
 
     if (!file) {
 
-        alert(
-            "Please select a CSV file."
-        );
+        alert("Please select a CSV file.");
 
         return;
-
     }
 
 
-    const reader =
-        new FileReader();
+    const reader = new FileReader();
 
 
-    reader.onload =
-        function(e) {
+    reader.onload = function(e) {
+
+        try {
+
+            const text = e.target.result;
+
+            const rows = parseCSV(text);
+
+            if (rows.length < 2) {
+
+                alert("CSV does not contain enough data.");
+
+                return;
+            }
 
 
-            try {
+            originalHeaders = rows[0];
+
+            const dataRows = rows.slice(1);
 
 
-                const text =
-                    e.target.result;
-
-
-                const rows =
-                    parseCSV(text);
-
-
-                if (rows.length < 2) {
-
-                    alert(
-                        "CSV does not contain enough data."
-                    );
-
-                    return;
-
-                }
-
-
-                originalHeaders =
-                    rows[0];
-
-
-                const dataRows =
-                    rows.slice(1);
-
-
-                students =
-                    dataRows
-
-                    .filter(
-                        row =>
-                            row.some(
-                                value =>
-                                    String(
-                                        value || ""
-                                    ).trim() !== ""
-                            )
+            students = dataRows
+                .filter(row =>
+                    row.some(value =>
+                        String(value || "").trim() !== ""
                     )
+                )
+                .map((row, index) => {
 
-                    .map(
-                        (row, index) => {
+                    const original = {};
 
+                    originalHeaders.forEach((header, i) => {
 
-                            const original = {};
+                        original[header] =
+                            row[i] !== undefined
+                                ? row[i]
+                                : "";
 
+                    });
 
-                            originalHeaders
-                                .forEach(
-                                    (header, i) => {
 
-                                        original[header] =
-                                            row[i] !== undefined
-                                                ? row[i]
-                                                : "";
+                    const values = {};
 
-                                    }
-                                );
+                    Object.keys(fields).forEach(field => {
 
+                        const header =
+                            findHeader(
+                                originalHeaders,
+                                fields[field].candidates
+                            );
 
-                            const values = {};
+                        values[field] =
+                            header
+                                ? original[header]
+                                : "";
 
+                    });
 
-                            Object.keys(fields)
-                                .forEach(
-                                    field => {
 
+                    // IMPORTANT:
+                    // EVERY FIELD STARTS AS CORRECT
 
-                                        const header =
-                                            findHeader(
-                                                originalHeaders,
-                                                fields[field]
-                                                    .candidates
-                                            );
+                    const fieldStatus = {};
 
+                    Object.keys(fields).forEach(field => {
 
-                                        values[field] =
-                                            header
-                                                ? original[header]
-                                                : "";
+                        fieldStatus[field] = "correct";
 
-                                    }
-                                );
+                    });
 
 
-                            /*
-                             * IMPORTANT:
-                             *
-                             * Every field is CORRECT
-                             * when the student is first opened.
-                             */
+                    return {
 
-                            const fieldStatus = {};
+                        internalId: index + 1,
 
+                        original: original,
 
-                            Object.keys(fields)
-                                .forEach(
-                                    field => {
+                        values: values,
 
-                                        fieldStatus[field] =
-                                            "correct";
+                        fieldStatus: fieldStatus,
 
-                                    }
-                                );
+                        corrections: {},
 
+                        status: "unchecked",
 
-                            return {
+                        checkedAt: ""
 
+                    };
 
-                                internalId:
-                                    index + 1,
+                });
 
 
-                                original:
-                                    original,
+            document.getElementById("fileInfo").innerHTML =
+                `<p>
+                    <strong>${file.name}</strong>
+                    loaded successfully.
+                    ${students.length} students found.
+                </p>`;
 
 
-                                values:
-                                    values,
+            document.getElementById("startBtn").disabled = false;
 
+        }
 
-                                fieldStatus:
-                                    fieldStatus,
+        catch(error) {
 
+            console.error(error);
 
-                                corrections:
-                                    {},
+            alert(
+                "Could not read CSV. Please check the file format."
+            );
 
+        }
 
-                                status:
-                                    "unchecked",
-
-
-                                checkedAt:
-                                    ""
-
-                            };
-
-
-                        }
-                    );
-
-
-                document
-                    .getElementById("fileInfo")
-                    .innerHTML = `
-
-                        <p>
-
-                            <strong>
-                                ${escapeHTML(file.name)}
-                            </strong>
-
-                            loaded successfully.
-
-                            ${students.length}
-                            students found.
-
-                        </p>
-
-                    `;
-
-
-                document
-                    .getElementById("startBtn")
-                    .disabled = false;
-
-
-            }
-
-
-            catch(error) {
-
-
-                console.error(error);
-
-
-                alert(
-                    "Could not read CSV. Please check the file format."
-                );
-
-
-            }
-
-
-        };
+    };
 
 
     reader.readAsText(file);
@@ -1507,14 +817,11 @@ function loadCSV() {
 }
 
 
-
 // ============================================================
 // CSV PARSER
 // ============================================================
 
-
 function parseCSV(text) {
-
 
     const rows = [];
 
@@ -1525,80 +832,43 @@ function parseCSV(text) {
     let insideQuotes = false;
 
 
-    for (
-        let i = 0;
-        i < text.length;
-        i++
-    ) {
+    for (let i = 0; i < text.length; i++) {
+
+        const char = text[i];
+
+        const next = text[i + 1];
 
 
-        const char =
-            text[i];
-
-
-        const next =
-            text[i + 1];
-
-
-        if (
-            char === '"' &&
-            insideQuotes &&
-            next === '"'
-        ) {
-
+        if (char === '"' && insideQuotes && next === '"') {
 
             value += '"';
 
             i++;
 
+        }
+
+        else if (char === '"') {
+
+            insideQuotes = !insideQuotes;
 
         }
 
-
-        else if (
-            char === '"'
-        ) {
-
-
-            insideQuotes =
-                !insideQuotes;
-
-
-        }
-
-
-        else if (
-            char === "," &&
-            !insideQuotes
-        ) {
-
+        else if (char === "," && !insideQuotes) {
 
             row.push(value);
 
             value = "";
 
-
         }
 
-
         else if (
-            (
-                char === "\n" ||
-                char === "\r"
-            ) &&
-            !insideQuotes
+            (char === "\n" || char === "\r")
+            && !insideQuotes
         ) {
 
-
-            if (
-                char === "\r" &&
-                next === "\n"
-            ) {
-
+            if (char === "\r" && next === "\n") {
                 i++;
-
             }
-
 
             row.push(value);
 
@@ -1608,27 +878,18 @@ function parseCSV(text) {
 
             row = [];
 
-
         }
-
 
         else {
 
-
             value += char;
 
-
         }
-
 
     }
 
 
-    if (
-        value !== "" ||
-        row.length > 0
-    ) {
-
+    if (value !== "" || row.length > 0) {
 
         row.push(value);
 
@@ -1642,23 +903,17 @@ function parseCSV(text) {
 }
 
 
-
 // ============================================================
 // START CHECKING
 // ============================================================
 
-
 function startChecking() {
-
 
     if (!students.length) {
 
-        alert(
-            "Load a CSV first."
-        );
+        alert("Load a CSV first.");
 
         return;
-
     }
 
 
@@ -1666,11 +921,9 @@ function startChecking() {
         .getElementById("statsSection")
         .classList.remove("hidden");
 
-
     document
         .getElementById("checkingSection")
         .classList.remove("hidden");
-
 
     document
         .getElementById("exportSection")
@@ -1682,9 +935,7 @@ function startChecking() {
     renderStudentList();
 
 
-    if (
-        currentStudentIndex === null
-    ) {
+    if (currentStudentIndex === null) {
 
         selectStudent(0);
 
@@ -1693,30 +944,24 @@ function startChecking() {
 }
 
 
-
 // ============================================================
 // FILTER
 // ============================================================
 
-
 function setFilter(filter) {
 
-    currentFilter =
-        filter;
+    currentFilter = filter;
 
     renderStudentList();
 
 }
 
 
-
 // ============================================================
-// GET FILTERED STUDENTS
+// FILTER STUDENTS
 // ============================================================
-
 
 function getFilteredStudents() {
-
 
     const search =
         document
@@ -1727,124 +972,73 @@ function getFilteredStudents() {
 
 
     return students
+        .map((student, index) => ({
+            student,
+            index
+        }))
+        .filter(item => {
 
-        .map(
-            (student, index) => ({
-
-                student,
-                index
-
-            })
-        )
+            const student = item.student;
 
 
-        .filter(
-            item => {
+            const name =
+                String(
+                    student.values.studentName || ""
+                ).toLowerCase();
 
 
-                const student =
-                    item.student;
+            const id =
+                String(
+                    getStudentID(student) || ""
+                ).toLowerCase();
 
 
-                const name =
-                    String(
-                        student
-                            .values
-                            .studentName || ""
-                    )
-                    .toLowerCase();
+            const matchesSearch =
+                !search ||
+                name.includes(search) ||
+                id.includes(search);
 
 
-                const id =
-                    String(
-                        getStudentID(student) || ""
-                    )
-                    .toLowerCase();
+            let matchesFilter = true;
 
 
-                const matchesSearch =
+            if (currentFilter === "unchecked") {
 
-                    !search ||
-
-                    name.includes(search) ||
-
-                    id.includes(search);
-
-
-                let matchesFilter =
-                    true;
-
-
-                if (
-                    currentFilter ===
-                    "unchecked"
-                ) {
-
-
-                    matchesFilter =
-                        student.status ===
-                        "unchecked";
-
-
-                }
-
-
-                else if (
-                    currentFilter ===
-                    "verified"
-                ) {
-
-
-                    matchesFilter =
-                        student.status ===
-                        "verified";
-
-
-                }
-
-
-                else if (
-                    currentFilter ===
-                    "corrected"
-                ) {
-
-
-                    matchesFilter =
-                        student.status ===
-                        "corrected";
-
-
-                }
-
-
-                return (
-
-                    matchesSearch &&
-                    matchesFilter
-
-                );
-
+                matchesFilter =
+                    student.status === "unchecked";
 
             }
-        );
+
+            else if (currentFilter === "verified") {
+
+                matchesFilter =
+                    student.status === "verified";
+
+            }
+
+            else if (currentFilter === "corrected") {
+
+                matchesFilter =
+                    student.status === "corrected";
+
+            }
+
+
+            return matchesSearch && matchesFilter;
+
+        });
 
 }
-
 
 
 // ============================================================
 // RENDER STUDENT LIST
 // ============================================================
 
-
 function renderStudentList() {
 
-
     const container =
-        document
-            .getElementById(
-                "studentList"
-            );
+        document.getElementById("studentList");
 
 
     container.innerHTML = "";
@@ -1856,190 +1050,113 @@ function renderStudentList() {
 
     if (!filtered.length) {
 
-
-        container.innerHTML = `
-
-            <div
-                style="
-                    padding:15px;
-                    color:#777;
-                "
-            >
-
+        container.innerHTML =
+            `<div style="padding:15px;color:#777">
                 No students found.
-
-            </div>
-
-        `;
-
+            </div>`;
 
         return;
 
     }
 
 
-    filtered.forEach(
-        item => {
+    filtered.forEach(item => {
+
+        const student = item.student;
+
+        const index = item.index;
 
 
-            const student =
-                item.student;
+        const div =
+            document.createElement("div");
 
 
-            const index =
-                item.index;
+        div.className =
+            "student-item" +
+            (
+                index === currentStudentIndex
+                    ? " active"
+                    : ""
+            );
 
 
-            const div =
-                document.createElement(
-                    "div"
-                );
+        let statusText = "Unchecked";
+
+        let statusClass = "status-unchecked";
 
 
-            div.className =
-                "student-item" +
+        if (student.status === "verified") {
 
-                (
-                    index ===
-                    currentStudentIndex
-                        ? " active"
-                        : ""
-                );
+            statusText = "Verified";
 
-
-            let statusText =
-                "Unchecked";
-
-
-            let statusClass =
-                "status-unchecked";
-
-
-            if (
-                student.status ===
-                "verified"
-            ) {
-
-
-                statusText =
-                    "Verified";
-
-
-                statusClass =
-                    "status-verified";
-
-
-            }
-
-
-            else if (
-                student.status ===
-                "corrected"
-            ) {
-
-
-                statusText =
-                    "Corrected";
-
-
-                statusClass =
-                    "status-corrected";
-
-
-            }
-
-
-            div.innerHTML = `
-
-
-                <div class="student-name">
-
-                    ${escapeHTML(
-                        student
-                            .values
-                            .studentName ||
-                        "Unnamed Student"
-                    )}
-
-                </div>
-
-
-                <div class="student-meta">
-
-                    ID:
-
-                    ${escapeHTML(
-                        String(
-                            getStudentID(student) ||
-                            ""
-                        )
-                    )}
-
-                    &nbsp; | &nbsp;
-
-                    Grade:
-
-                    ${escapeHTML(
-                        student
-                            .values
-                            .grade ||
-                        ""
-                    )}
-
-                    ${
-                        student.values.section
-                            ? " - " +
-                              escapeHTML(
-                                  student
-                                      .values
-                                      .section
-                              )
-                            : ""
-                    }
-
-                </div>
-
-
-                <span
-                    class="
-                        status
-                        ${statusClass}
-                    "
-                >
-
-                    ${statusText}
-
-                </span>
-
-
-            `;
-
-
-            div.onclick =
-                () =>
-                    selectStudent(index);
-
-
-            container.appendChild(div);
-
+            statusClass = "status-verified";
 
         }
-    );
+
+        else if (student.status === "corrected") {
+
+            statusText = "Corrected";
+
+            statusClass = "status-corrected";
+
+        }
+
+
+        div.innerHTML = `
+
+            <div class="student-name">
+                ${escapeHTML(
+                    student.values.studentName ||
+                    "Unnamed Student"
+                )}
+            </div>
+
+            <div class="student-meta">
+
+                ID:
+                ${escapeHTML(
+                    String(getStudentID(student) || "")
+                )}
+
+                &nbsp; | &nbsp;
+
+                Grade:
+                ${escapeHTML(
+                    student.values.grade || ""
+                )}
+
+                ${student.values.section
+                    ? " - " +
+                      escapeHTML(student.values.section)
+                    : ""
+                }
+
+            </div>
+
+            <span class="status ${statusClass}">
+                ${statusText}
+            </span>
+        `;
+
+
+        div.onclick =
+            () => selectStudent(index);
+
+
+        container.appendChild(div);
+
+    });
 
 }
-
 
 
 // ============================================================
 // SELECT STUDENT
 // ============================================================
 
-
 function selectStudent(index) {
 
-
-    currentStudentIndex =
-        index;
+    currentStudentIndex = index;
 
 
     const student =
@@ -2047,72 +1164,38 @@ function selectStudent(index) {
 
 
     document
-        .getElementById(
-            "editorEmpty"
-        )
-        .classList
-        .add("hidden");
+        .getElementById("editorEmpty")
+        .classList.add("hidden");
 
 
     document
-        .getElementById(
-            "editor"
-        )
-        .classList
-        .remove("hidden");
+        .getElementById("editor")
+        .classList.remove("hidden");
 
 
-    document
-        .getElementById(
-            "studentTitle"
-        )
-        .textContent =
-
-            student
-                .values
-                .studentName ||
-
-            "Unnamed Student";
+    document.getElementById("studentTitle").textContent =
+        student.values.studentName ||
+        "Unnamed Student";
 
 
-    document
-        .getElementById(
-            "studentMeta"
-        )
-        .innerHTML = `
+    document.getElementById("studentMeta").innerHTML = `
 
-            <strong>
-                ID:
-            </strong>
+        <strong>ID:</strong>
+        ${escapeHTML(
+            String(getStudentID(student) || "")
+        )}
 
-            ${escapeHTML(
-                String(
-                    getStudentID(student) ||
-                    ""
-                )
-            )}
+        &nbsp;&nbsp;
 
-            &nbsp;&nbsp;
+        <strong>Grade:</strong>
+        ${escapeHTML(student.values.grade || "")}
 
-            <strong>
-                Grade:
-            </strong>
+        &nbsp;&nbsp;
 
-            ${escapeHTML(
-                student.values.grade || ""
-            )}
+        <strong>Section:</strong>
+        ${escapeHTML(student.values.section || "")}
 
-            &nbsp;&nbsp;
-
-            <strong>
-                Section:
-            </strong>
-
-            ${escapeHTML(
-                student.values.section || ""
-            )}
-
-        `;
+    `;
 
 
     renderFields();
@@ -2122,478 +1205,299 @@ function selectStudent(index) {
 }
 
 
-
 // ============================================================
 // RENDER FIELDS
 // ============================================================
 
-
 function renderFields() {
 
-
     const student =
-        students[
-            currentStudentIndex
-        ];
+        students[currentStudentIndex];
 
 
     const container =
-        document
-            .getElementById(
-                "fieldsContainer"
-            );
+        document.getElementById("fieldsContainer");
 
 
     container.innerHTML = "";
 
 
-    Object.keys(fields)
-        .forEach(
-            field => {
+    Object.keys(fields).forEach(field => {
+
+        const config = fields[field];
+
+        const value =
+            student.values[field] || "";
 
 
-                const config =
-                    fields[field];
+        // DEFAULT = CORRECT
+
+        const status =
+            student.fieldStatus[field] || "correct";
 
 
-                const value =
-                    student
-                        .values[field] || "";
+        const div =
+            document.createElement("div");
 
 
-                /*
-                 * Default status = CORRECT
-                 */
-
-                const status =
-                    student
-                        .fieldStatus[field] ||
-                    "correct";
-
-
-                const div =
-                    document
-                        .createElement(
-                            "div"
-                        );
+        div.className =
+            "field " +
+            (
+                status === "incorrect"
+                    ? "incorrect"
+                    : "correct"
+            );
 
 
-                div.className =
-
-                    "field " +
-
-                    (
-                        status ===
-                        "incorrect"
-
-                            ? "incorrect"
-
-                            : "correct"
-                    );
+        div.id =
+            "field-" + field;
 
 
-                div.id =
-                    "field-" +
-                    field;
+        const disabled =
+            status !== "incorrect"
+                ? "disabled"
+                : "";
 
 
-                const disabled =
+        div.innerHTML = `
 
-                    status !==
-                    "incorrect"
+            <div class="field-header">
 
-                        ? "disabled"
+                <div class="field-title">
 
-                        : "";
+                    ${escapeHTML(config.label)}
 
-
-                div.innerHTML = `
+                </div>
 
 
-                    <div
-                        class="field-header"
-                    >
+                <div class="field-actions">
+
+                    <button
+                        class="btn-success"
+                        onclick="markCorrect('${field}')">
+
+                        ✓ Correct
+
+                    </button>
 
 
-                        <div
-                            class="field-title"
-                        >
+                    <button
+                        class="btn-danger"
+                        onclick="markIncorrect('${field}')">
 
-                            ${escapeHTML(
-                                config.label
-                            )}
+                        ✎ Incorrect
 
-                        </div>
+                    </button>
 
+                </div>
 
-                        <div
-                            class="field-actions"
-                        >
+            </div>
 
 
-                            <button
-                                class="btn-success"
-                                onclick="
-                                    markCorrect(
-                                        '${field}'
-                                    )
-                                "
-                            >
+            <input
+                type="text"
+                id="input-${field}"
+                value="${escapeAttribute(value)}"
+                ${disabled}
+            />
 
-                                ✓ Correct
-
-                            </button>
+        `;
 
 
-                            <button
-                                class="btn-danger"
-                                onclick="
-                                    markIncorrect(
-                                        '${field}'
-                                    )
-                                "
-                            >
+        container.appendChild(div);
 
-                                ✎ Incorrect
-
-                            </button>
-
-
-                        </div>
-
-
-                    </div>
-
-
-                    <input
-
-                        type="text"
-
-                        id="
-                            input-${field}
-                        "
-
-                        value="
-                            ${escapeAttribute(
-                                value
-                            )}
-                        "
-
-                        ${disabled}
-
-                    >
-
-
-                `;
-
-
-                container
-                    .appendChild(div);
-
-
-            }
-        );
+    });
 
 }
-
 
 
 // ============================================================
 // MARK CORRECT
 // ============================================================
 
-
 function markCorrect(field) {
 
-
     const student =
-        students[
-            currentStudentIndex
-        ];
+        students[currentStudentIndex];
 
 
-    student
-        .fieldStatus[field] =
-            "correct";
+    student.fieldStatus[field] =
+        "correct";
 
 
     const input =
-        document
-            .getElementById(
-                "input-" + field
-            );
+        document.getElementById(
+            "input-" + field
+        );
 
 
-    if (input) {
+    input.disabled = true;
+
+    input.classList.remove("editable");
 
 
-        input.disabled =
-            true;
+    document
+        .getElementById("field-" + field)
+        .classList.remove("incorrect");
 
 
-        input.classList
-            .remove(
-                "editable"
-            );
-
-    }
-
-
-    const fieldElement =
-        document
-            .getElementById(
-                "field-" + field
-            );
-
-
-    if (fieldElement) {
-
-
-        fieldElement
-            .classList
-            .remove(
-                "incorrect"
-            );
-
-
-        fieldElement
-            .classList
-            .add(
-                "correct"
-            );
-
-    }
+    document
+        .getElementById("field-" + field)
+        .classList.add("correct");
 
 }
-
 
 
 // ============================================================
 // MARK INCORRECT
 // ============================================================
 
-
 function markIncorrect(field) {
 
-
     const student =
-        students[
-            currentStudentIndex
-        ];
+        students[currentStudentIndex];
 
 
-    student
-        .fieldStatus[field] =
-            "incorrect";
+    student.fieldStatus[field] =
+        "incorrect";
 
 
     const input =
-        document
-            .getElementById(
-                "input-" + field
-            );
+        document.getElementById(
+            "input-" + field
+        );
 
 
-    if (input) {
+    input.disabled = false;
+
+    input.classList.add("editable");
+
+    input.focus();
 
 
-        input.disabled =
-            false;
+    document
+        .getElementById("field-" + field)
+        .classList.remove("correct");
 
 
-        input.classList
-            .add(
-                "editable"
-            );
-
-
-        input.focus();
-
-    }
-
-
-    const fieldElement =
-        document
-            .getElementById(
-                "field-" + field
-            );
-
-
-    if (fieldElement) {
-
-
-        fieldElement
-            .classList
-            .remove(
-                "correct"
-            );
-
-
-        fieldElement
-            .classList
-            .add(
-                "incorrect"
-            );
-
-    }
+    document
+        .getElementById("field-" + field)
+        .classList.add("incorrect");
 
 }
 
 
-
 // ============================================================
-// SAVE AND VERIFY
+// SAVE & VERIFY
 // ============================================================
-
 
 function saveAndVerify() {
 
-
     const student =
-        students[
-            currentStudentIndex
-        ];
+        students[currentStudentIndex];
 
 
-    /*
-     * Read the edited values
-     */
+    // Get latest input values
 
-    Object.keys(fields)
-        .forEach(
-            field => {
+    Object.keys(fields).forEach(field => {
 
-
-                const input =
-                    document
-                        .getElementById(
-                            "input-" + field
-                        );
+        const input =
+            document.getElementById(
+                "input-" + field
+            );
 
 
-                if (input) {
+        if (input) {
+
+            student.values[field] =
+                input.value.trim();
+
+        }
+
+    });
 
 
-                    student
-                        .values[field] =
-                            input.value.trim();
+    // Determine whether any field was actually changed
 
-                }
-
-            }
-        );
+    let hasCorrection = false;
 
 
-    /*
-     * Compare final values
-     * with original CSV values
-     */
-
-    let hasCorrection =
-        false;
+    student.corrections = {};
 
 
-    student.corrections =
-        {};
+    Object.keys(fields).forEach(field => {
+
+        const originalValue =
+            String(
+                student.values[field] === undefined
+                    ? ""
+                    : student.values[field]
+            );
 
 
-    Object.keys(fields)
-        .forEach(
-            field => {
+        // Find original value for this field
+
+        const header =
+            findHeader(
+                originalHeaders,
+                fields[field].candidates
+            );
 
 
-                const header =
-                    findHeader(
-                        originalHeaders,
-                        fields[field]
-                            .candidates
-                    );
+        const oldValue =
+            header
+                ? String(
+                    student.original[header] || ""
+                ).trim()
+                : "";
 
 
-                const originalValue =
-
-                    header
-
-                        ? String(
-                            student
-                                .original[
-                                    header
-                                ] || ""
-                          ).trim()
-
-                        : "";
+        const newValue =
+            String(
+                student.values[field] || ""
+            ).trim();
 
 
-                const finalValue =
+        if (oldValue !== newValue) {
 
-                    String(
-                        student
-                            .values[field] ||
-                        ""
-                    ).trim();
+            hasCorrection = true;
 
 
-                if (
-                    originalValue !==
-                    finalValue
-                ) {
+            student.corrections[field] = {
+
+                field:
+                    fields[field].label,
+
+                original:
+                    oldValue,
+
+                corrected:
+                    newValue
+
+            };
+
+        }
+
+    });
 
 
-                    hasCorrection =
-                        true;
-
-
-                    student
-                        .corrections[field] = {
-
-
-                            field:
-                                fields[field]
-                                    .label,
-
-
-                            original:
-                                originalValue,
-
-
-                            corrected:
-                                finalValue
-
-
-                        };
-
-                }
-
-            }
-        );
-
-
-    /*
-     * Student overall status
-     */
+    // Student status
 
     if (hasCorrection) {
 
-
-        student.status =
-            "corrected";
-
+        student.status = "corrected";
 
     }
 
-
     else {
 
-
-        student.status =
-            "verified";
+        student.status = "verified";
 
     }
 
 
     student.checkedAt =
-        new Date()
-            .toLocaleString();
+        new Date().toLocaleString();
 
 
     updateStats();
@@ -2602,32 +1506,21 @@ function saveAndVerify() {
 
 
     alert(
-
         hasCorrection
-
             ? "Student saved and marked as CORRECTED."
-
             : "Student saved and marked as VERIFIED."
-
     );
 
 }
-
 
 
 // ============================================================
 // CANCEL
 // ============================================================
 
-
 function cancelEditing() {
 
-
-    if (
-        currentStudentIndex !==
-        null
-    ) {
-
+    if (currentStudentIndex !== null) {
 
         renderFields();
 
@@ -2636,14 +1529,11 @@ function cancelEditing() {
 }
 
 
-
 // ============================================================
-// UPDATE STATISTICS
+// UPDATE STATS
 // ============================================================
-
 
 function updateStats() {
-
 
     const total =
         students.length;
@@ -2651,85 +1541,53 @@ function updateStats() {
 
     const unchecked =
         students.filter(
-            student =>
-                student.status ===
-                "unchecked"
+            s => s.status === "unchecked"
         ).length;
 
 
     const verified =
         students.filter(
-            student =>
-                student.status ===
-                "verified"
+            s => s.status === "verified"
         ).length;
 
 
     const corrected =
         students.filter(
-            student =>
-                student.status ===
-                "corrected"
+            s => s.status === "corrected"
         ).length;
 
 
-    document
-        .getElementById(
-            "totalCount"
-        )
-        .textContent =
-            total;
+    document.getElementById("totalCount").textContent =
+        total;
 
 
-    document
-        .getElementById(
-            "uncheckedCount"
-        )
-        .textContent =
-            unchecked;
+    document.getElementById("uncheckedCount").textContent =
+        unchecked;
 
 
-    document
-        .getElementById(
-            "verifiedCount"
-        )
-        .textContent =
-            verified;
+    document.getElementById("verifiedCount").textContent =
+        verified;
 
 
-    document
-        .getElementById(
-            "correctedCount"
-        )
-        .textContent =
-            corrected;
+    document.getElementById("correctedCount").textContent =
+        corrected;
 
 }
-
 
 
 // ============================================================
 // GET STUDENT ID
 // ============================================================
 
-
 function getStudentID(student) {
 
-
     const candidates = [
-
         "Student ID",
-
         "ID",
-
         "StudentID",
-
         "Roll No",
-
         "Roll Number",
-
         "Roll"
-
     ];
 
 
@@ -2741,101 +1599,64 @@ function getStudentID(student) {
 
 
     return header
-
         ? student.original[header]
-
         : "";
 
 }
 
 
-
 // ============================================================
-// EXPORT INCORRECT DETAILS
+// EXPORT 1
+// INCORRECT DETAILS
 // ============================================================
-
 
 function exportIncorrect() {
-
 
     const output = [];
 
 
-    students.forEach(
-        student => {
+    students.forEach(student => {
+
+        Object.keys(student.corrections)
+            .forEach(field => {
+
+                const correction =
+                    student.corrections[field];
 
 
-            Object.keys(
-                student.corrections
-            )
-            .forEach(
-                field => {
+                output.push({
 
+                    "Student ID":
+                        getStudentID(student),
 
-                    const correction =
-                        student
-                            .corrections[
-                                field
-                            ];
+                    "Student Name":
+                        student.values.studentName,
 
+                    "Grade":
+                        student.values.grade,
 
-                    output.push({
+                    "Section":
+                        student.values.section,
 
+                    "Field":
+                        correction.field,
 
-                        "Student ID":
-                            getStudentID(
-                                student
-                            ),
+                    "Original Detail":
+                        correction.original,
 
+                    "Corrected Detail":
+                        correction.corrected
 
-                        "Student Name":
-                            student
-                                .values
-                                .studentName,
+                });
 
+            });
 
-                        "Grade":
-                            student
-                                .values
-                                .grade,
-
-
-                        "Section":
-                            student
-                                .values
-                                .section,
-
-
-                        "Field":
-                            correction.field,
-
-
-                        "Original Detail":
-                            correction.original,
-
-
-                        "Corrected Detail":
-                            correction.corrected
-
-
-                    });
-
-
-                }
-            );
-
-
-        }
-    );
+    });
 
 
     if (!output.length) {
 
-
-        alert(
-            "No incorrect details found."
-        );
-
+        alert("No incorrect details found.");
 
         return;
 
@@ -2843,108 +1664,69 @@ function exportIncorrect() {
 
 
     downloadExcel(
-
         output,
-
         "Incorrect_Details.xlsx"
-
     );
 
 }
 
 
-
 // ============================================================
-// EXPORT CORRECTED STUDENTS
+// EXPORT 2
+// CORRECTED STUDENTS ONLY
 // ============================================================
-
 
 function exportCorrected() {
-
 
     const output = [];
 
 
     students
-
         .filter(
             student =>
-                student.status ===
-                "corrected"
+                student.status === "corrected"
         )
+        .forEach(student => {
 
-        .forEach(
-            student => {
-
-
-                const row = {};
+            const row = {};
 
 
-                /*
-                 * Start with original CSV
-                 */
+            originalHeaders.forEach(header => {
 
-                originalHeaders
-                    .forEach(
-                        header => {
+                row[header] =
+                    student.original[header] || "";
 
-                            row[header] =
-                                student
-                                    .original[
-                                        header
-                                    ] || "";
-
-                        }
-                    );
+            });
 
 
-                /*
-                 * Replace corrected
-                 * mapped fields
-                 */
+            Object.keys(fields)
+                .forEach(field => {
 
-                Object.keys(fields)
-                    .forEach(
-                        field => {
-
-
-                            const header =
-                                findHeader(
-                                    originalHeaders,
-                                    fields[field]
-                                        .candidates
-                                );
+                    const header =
+                        findHeader(
+                            originalHeaders,
+                            fields[field].candidates
+                        );
 
 
-                            if (header) {
+                    if (header) {
+
+                        row[header] =
+                            student.values[field] || "";
+
+                    }
+
+                });
 
 
-                                row[header] =
-                                    student
-                                        .values[
-                                            field
-                                        ] || "";
+            output.push(row);
 
-                            }
-
-                        }
-                    );
-
-
-                output.push(row);
-
-
-            }
-        );
+        });
 
 
     if (!output.length) {
 
-
-        alert(
-            "No corrected students found."
-        );
-
+        alert("No corrected students found.");
 
         return;
 
@@ -2952,68 +1734,114 @@ function exportCorrected() {
 
 
     downloadExcel(
-
         output,
-
         "Corrected_Students.xlsx"
-
     );
 
 }
 
 
-
 // ============================================================
-// EXPORT VERIFIED STUDENTS
-//
-// THIS IS THE NEW CLEAN REPORT
-//
-// Columns:
-//
-// Student ID
-// Name
-// Guardian Name
-// Student Address
-// Guardian Address
-// Student Contact
-// Guardian Contact
-// DOB
-// Grade
-//
-// NO SECTION
+// EXPORT 3
+// COMPLETE LIST
 // ============================================================
 
+function exportComplete() {
 
-function exportVerifiedStudents() {
-
-
-    const verifiedStudents =
-
+    const unchecked =
         students.filter(
+            s => s.status === "unchecked"
+        ).length;
 
+
+    if (unchecked > 0) {
+
+        const proceed =
+            confirm(
+                `${unchecked} students have not been verified yet.\n\n` +
+                `Do you still want to download the complete list?`
+            );
+
+
+        if (!proceed) return;
+
+    }
+
+
+    const output = [];
+
+
+    students.forEach(student => {
+
+        const row = {};
+
+
+        // Start with original data
+
+        originalHeaders.forEach(header => {
+
+            row[header] =
+                student.original[header] || "";
+
+        });
+
+
+        // Replace mapped fields with verified values
+
+        Object.keys(fields)
+            .forEach(field => {
+
+                const header =
+                    findHeader(
+                        originalHeaders,
+                        fields[field].candidates
+                    );
+
+
+                if (header) {
+
+                    row[header] =
+                        student.values[field] || "";
+
+                }
+
+            });
+
+
+        output.push(row);
+
+    });
+
+
+    downloadExcel(
+        output,
+        "Complete_Verified_Student_List.xlsx"
+    );
+
+}
+
+
+// ============================================================
+// EXPORT 4
+// VERIFIED CHECKS
+// ============================================================
+
+function exportVerifiedChecks() {
+
+    const checkedStudents =
+        students.filter(
             student =>
-
-                student.status ===
-                    "verified"
-
-                ||
-
-                student.status ===
-                    "corrected"
-
+                student.status === "verified" ||
+                student.status === "corrected"
         );
 
 
-    if (
-        !verifiedStudents.length
-    ) {
-
+    if (!checkedStudents.length) {
 
         alert(
             "No students have been verified yet."
         );
 
-
         return;
 
     }
@@ -3022,414 +1850,144 @@ function exportVerifiedStudents() {
     const output = [];
 
 
-    verifiedStudents.forEach(
-        student => {
+    checkedStudents.forEach(student => {
+
+        const row = {
+
+            "Student ID":
+                getStudentID(student),
+
+            "Student Name":
+                student.values.studentName,
+
+            "Grade":
+                student.values.grade,
+
+            "Section":
+                student.values.section,
+
+            "Overall Status":
+                student.status === "corrected"
+                    ? "Corrected"
+                    : "Verified",
+
+            "Checked At":
+                student.checkedAt
+
+        };
 
 
-            output.push({
+        // Add every field's verification status
+
+        Object.keys(fields).forEach(field => {
+
+            const label =
+                fields[field].label;
 
 
-                "Student ID":
-                    getStudentID(
-                        student
-                    ),
+            const status =
+                student.fieldStatus[field];
 
 
-                "Name":
-                    student
-                        .values
-                        .studentName ||
-                    "",
+            row[label + " Status"] =
+                status === "incorrect"
+                    ? "Corrected"
+                    : "Correct";
+
+        });
 
 
-                "Guardian Name":
-                    student
-                        .values
-                        .guardianName ||
-                    "",
+        // Add final values
+
+        Object.keys(fields).forEach(field => {
+
+            row[fields[field].label] =
+                student.values[field] || "";
+
+        });
 
 
-                "Student Address":
-                    student
-                        .values
-                        .studentAddress ||
-                    "",
+        output.push(row);
 
-
-                "Guardian Address":
-                    student
-                        .values
-                        .guardianAddress ||
-                    "",
-
-
-                "Student Contact":
-                    student
-                        .values
-                        .studentContact ||
-                    "",
-
-
-                "Guardian Contact":
-                    student
-                        .values
-                        .guardianContact ||
-                    "",
-
-
-                "DOB":
-                    student
-                        .values
-                        .dob ||
-                    "",
-
-
-                "Grade":
-                    student
-                        .values
-                        .grade ||
-                    ""
-
-
-            });
-
-
-        }
-    );
+    });
 
 
     downloadExcel(
-
         output,
-
-        "Verified_Students.xlsx"
-
+        "Verified_Checks.xlsx"
     );
 
 }
 
 
-
 // ============================================================
-// EXPORT COMPLETE LIST
-//
-// Keeps ALL original CSV columns.
-// Corrected values replace original values.
+// EXPORT 5
+// CHECKING PROGRESS
 // ============================================================
-
-
-function exportComplete() {
-
-
-    const unchecked =
-
-        students.filter(
-
-            student =>
-                student.status ===
-                "unchecked"
-
-        ).length;
-
-
-    if (
-        unchecked > 0
-    ) {
-
-
-        const proceed =
-            confirm(
-
-                unchecked +
-
-                " students have not been verified yet.\n\n" +
-
-                "Do you still want to download the complete list?"
-
-            );
-
-
-        if (!proceed) {
-
-            return;
-
-        }
-
-    }
-
-
-    const output = [];
-
-
-    students.forEach(
-        student => {
-
-
-            const row = {};
-
-
-            /*
-             * Copy original CSV
-             */
-
-            originalHeaders
-                .forEach(
-                    header => {
-
-
-                        row[header] =
-                            student
-                                .original[
-                                    header
-                                ] || "";
-
-
-                    }
-                );
-
-
-            /*
-             * Replace mapped
-             * fields with final values
-             */
-
-            Object.keys(fields)
-                .forEach(
-                    field => {
-
-
-                        const header =
-                            findHeader(
-                                originalHeaders,
-                                fields[field]
-                                    .candidates
-                            );
-
-
-                        if (header) {
-
-
-                            row[header] =
-                                student
-                                    .values[
-                                        field
-                                    ] || "";
-
-                        }
-
-                    }
-                );
-
-
-            output.push(row);
-
-
-        }
-    );
-
-
-    downloadExcel(
-
-        output,
-
-        "Complete_Verified_Student_List.xlsx"
-
-    );
-
-}
-
-
-
-// ============================================================
-// EXPORT CHECKING PROGRESS
-// ============================================================
-
 
 function exportProgress() {
 
-
     const output = [];
 
 
-    students.forEach(
-        student => {
+    students.forEach(student => {
 
+        output.push({
 
-            let status =
-                "Unchecked";
+            "Student ID":
+                getStudentID(student),
 
+            "Student Name":
+                student.values.studentName,
 
-            if (
-                student.status ===
-                "verified"
-            ) {
+            "Grade":
+                student.values.grade,
 
+            "Section":
+                student.values.section,
 
-                status =
-                    "Verified";
+            "Status":
+                student.status === "unchecked"
+                    ? "Unchecked"
+                    : student.status === "corrected"
+                        ? "Corrected"
+                        : "Verified",
 
+            "Checked At":
+                student.checkedAt
 
-            }
+        });
 
-
-            else if (
-                student.status ===
-                "corrected"
-            ) {
-
-
-                status =
-                    "Corrected";
-
-            }
-
-
-            output.push({
-
-
-                "Student ID":
-                    getStudentID(
-                        student
-                    ),
-
-
-                "Student Name":
-                    student
-                        .values
-                        .studentName,
-
-
-                "Grade":
-                    student
-                        .values
-                        .grade,
-
-
-                "Section":
-                    student
-                        .values
-                        .section,
-
-
-                "Status":
-                    status,
-
-
-                "Checked At":
-                    student.checkedAt
-
-
-            });
-
-
-        }
-    );
+    });
 
 
     downloadExcel(
-
         output,
-
         "Checking_Progress.xlsx"
-
     );
 
 }
 
 
-
 // ============================================================
-// DOWNLOAD EXCEL
+// EXCEL DOWNLOAD
 // ============================================================
 
-
-function downloadExcel(
-    data,
-    filename
-) {
-
+function downloadExcel(data, filename) {
 
     const worksheet =
-        XLSX.utils
-            .json_to_sheet(
-                data
-            );
-
-
-    /*
-     * Automatically calculate
-     * column widths
-     */
-
-    const columns =
-        Object.keys(
-            data[0] || {}
-        );
-
-
-    worksheet["!cols"] =
-        columns.map(
-            column => {
-
-
-                let maxLength =
-                    column.length;
-
-
-                data.forEach(
-                    row => {
-
-
-                        const value =
-                            String(
-                                row[column] ||
-                                ""
-                            );
-
-
-                        if (
-                            value.length >
-                            maxLength
-                        ) {
-
-
-                            maxLength =
-                                value.length;
-
-                        }
-
-                    }
-                );
-
-
-                return {
-
-                    wch:
-                        Math.min(
-                            Math.max(
-                                maxLength + 2,
-                                12
-                            ),
-                            45
-                        )
-
-                };
-
-            }
-        );
+        XLSX.utils.json_to_sheet(data);
 
 
     const workbook =
-        XLSX.utils
-            .book_new();
+        XLSX.utils.book_new();
 
 
-    XLSX.utils
-        .book_append_sheet(
-            workbook,
-            worksheet,
-            "Data"
-        );
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Data"
+    );
 
 
     XLSX.writeFile(
@@ -3440,52 +1998,25 @@ function downloadExcel(
 }
 
 
-
 // ============================================================
 // ESCAPE HTML
 // ============================================================
 
-
 function escapeHTML(value) {
 
-
-    return String(
-        value || ""
-    )
-
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-
-    .replace(
-        /</g,
-        "&lt;"
-    )
-
-    .replace(
-        />/g,
-        "&gt;"
-    )
-
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-
-    .replace(
-        /'/g,
-        "&#039;"
-    );
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
 }
-
 
 
 // ============================================================
 // ESCAPE ATTRIBUTE
 // ============================================================
-
 
 function escapeAttribute(value) {
 
@@ -3493,10 +2024,7 @@ function escapeAttribute(value) {
 
 }
 
-
 </script>
 
-
 </body>
-
 </html>
