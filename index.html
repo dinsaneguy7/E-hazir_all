@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>e-Hazir Tools</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f8fb;
+      color: #222;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 40px 20px 25px;
+    }
+
+    header h1 {
+      font-size: 32px;
+      color: #1d4ed8;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: #666;
+      font-size: 15px;
+    }
+
+    /* Tools Grid */
+    .tools {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 18px;
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 22px;
+      transition: 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .icon {
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eff6ff;
+      border-radius: 10px;
+      font-size: 23px;
+      margin-bottom: 15px;
+    }
+
+    .card h2 {
+      font-size: 19px;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .card a {
+      display: inline-block;
+      padding: 9px 14px;
+      background: #2563eb;
+      color: white;
+      text-decoration: none;
+      border-radius: 7px;
+      font-size: 14px;
+    }
+
+    .card a:hover {
+      background: #1d4ed8;
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      header {
+        padding: 30px 15px 15px;
+      }
+
+      header h1 {
+        font-size: 27px;
+      }
+
+      .tools {
+        padding: 15px;
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>e-Hazir Tools</h1>
+    <p>Simple and useful tools, all in one place.</p>
+  </header>
+
+  <main class="tools">
+
+    <!-- Calculator -->
+    <div class="card">
+      <div class="icon">🧮</div>
+      <h2>Calculator</h2>
+      <p>A simple calculator for everyday calculations.</p>
+      <a href="calculator.html">Open Tool</a>
+    </div>
+
+    <!-- Text Formatter -->
+    <div class="card">
+      <div class="icon">📝</div>
+      <h2>Text Formatter</h2>
+      <p>Format, edit and modify your text quickly.</p>
+      <a href="text-formatter.html">Open Tool</a>
+    </div>
+
+    <!-- Password Generator -->
+    <div class="card">
+      <div class="icon">🔐</div>
+      <h2>Password Generator</h2>
+      <p>Create strong and secure random passwords.</p>
+      <a href="password-generator.html">Open Tool</a>
+    </div>
+
+    <!-- QR Generator -->
+    <div class="card">
+      <div class="icon">📱</div>
+      <h2>QR Generator</h2>
+      <p>Generate QR codes from text or links.</p>
+      <a href="qr-generator.html">Open Tool</a>
+    </div>
+
+    <!-- Image Resizer -->
+    <div class="card">
+      <div class="icon">🖼️</div>
+      <h2>Image Resizer</h2>
+      <p>Resize your images quickly and easily.</p>
+      <a href="image-resizer.html">Open Tool</a>
+    </div>
+
+    <!-- Add more tools here -->
+
+  </main>
+
+</body>
+</html>
