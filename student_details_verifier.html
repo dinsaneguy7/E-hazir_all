@@ -3,2028 +3,452 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Student Data Verification</title>
-
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
 <style>
-    * {
-        box-sizing: border-box;
-    }
-
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: #f4f6f8;
-        color: #222;
-    }
-
-    .container {
-        max-width: 1400px;
-        margin: auto;
-        padding: 25px;
-    }
-
-    h1 {
-        margin-bottom: 5px;
-    }
-
-    .subtitle {
-        color: #666;
-        margin-bottom: 25px;
-    }
-
-    .card {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    input[type="file"] {
-        margin: 10px 0;
-    }
-
-    button {
-        border: none;
-        padding: 9px 14px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-    }
-
-    button:hover {
-        opacity: 0.9;
-    }
-
-    .btn-primary {
-        background: #2563eb;
-        color: white;
-    }
-
-    .btn-success {
-        background: #16a34a;
-        color: white;
-    }
-
-    .btn-warning {
-        background: #f59e0b;
-        color: white;
-    }
-
-    .btn-danger {
-        background: #dc2626;
-        color: white;
-    }
-
-    .btn-secondary {
-        background: #64748b;
-        color: white;
-    }
-
-    .btn-purple {
-        background: #7c3aed;
-        color: white;
-    }
-
-    .hidden {
-        display: none !important;
-    }
-
-    .stats {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-
-    .stat {
-        background: white;
-        padding: 18px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    .stat h3 {
-        margin: 0;
-        font-size: 14px;
-        color: #666;
-    }
-
-    .stat strong {
-        display: block;
-        font-size: 28px;
-        margin-top: 5px;
-    }
-
-    .main-grid {
-        display: grid;
-        grid-template-columns: 330px 1fr;
-        gap: 20px;
-    }
-
-    .student-list {
-        max-height: 650px;
-        overflow-y: auto;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-    }
-
-    .student-item {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
-    }
-
-    .student-item:hover {
-        background: #f1f5f9;
-    }
-
-    .student-item.active {
-        background: #dbeafe;
-    }
-
-    .student-name {
-        font-weight: bold;
-    }
-
-    .student-meta {
-        font-size: 12px;
-        color: #666;
-        margin-top: 4px;
-    }
-
-    .status {
-        display: inline-block;
-        margin-top: 6px;
-        padding: 3px 7px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: bold;
-    }
-
-    .status-unchecked {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    .status-verified {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .status-corrected {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .search-box {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        margin-bottom: 10px;
-    }
-
-    .filter-buttons {
-        display: flex;
-        gap: 5px;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-    }
-
-    .filter-buttons button {
-        font-size: 12px;
-        padding: 7px 10px;
-    }
-
-    .field {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 12px;
-    }
-
-    .field-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 8px;
-    }
-
-    .field-title {
-        font-weight: bold;
-    }
-
-    .field-actions {
-        display: flex;
-        gap: 5px;
-    }
-
-    .field-actions button {
-        font-size: 12px;
-        padding: 6px 9px;
-    }
-
-    .field input {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background: #f8fafc;
-    }
-
-    .field input.editable {
-        background: white;
-        border-color: #f59e0b;
-    }
-
-    .field.correct {
-        border-left: 5px solid #16a34a;
-    }
-
-    .field.incorrect {
-        border-left: 5px solid #dc2626;
-    }
-
-    .verification-summary {
-        padding: 12px;
-        background: #f8fafc;
-        border-radius: 8px;
-        margin-bottom: 15px;
-    }
-
-    .export-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .top-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .notice {
-        padding: 12px;
-        border-radius: 8px;
-        background: #eff6ff;
-        color: #1e40af;
-        margin-top: 10px;
-    }
-
-    @media(max-width: 900px) {
-        .main-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .stats {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}
+.container{max-width:1400px;margin:auto;padding:16px}
+h1{margin:0 0 4px;font-size:24px}
+.subtitle{color:#666;margin-bottom:16px}
+.card{background:#fff;padding:16px;border-radius:10px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+button{border:none;padding:9px 14px;border-radius:6px;cursor:pointer;font-weight:600;color:#fff;font-size:14px}
+button:hover{opacity:.9}
+.btn-primary{background:#2563eb}.btn-success{background:#16a34a}.btn-warning{background:#f59e0b}
+.btn-danger{background:#dc2626}.btn-secondary{background:#64748b}.btn-purple{background:#7c3aed}
+.hidden{display:none!important}
+input[type=text]{font-size:15px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.task-input{flex:1;min-width:220px;padding:10px;border:1px solid #ccc;border-radius:6px}
+.task{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px}
+.task small{color:#666;display:block;margin-top:3px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.progress{height:8px;background:#e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:12px}
+.progress>div{height:100%;background:#16a34a;width:0;transition:width .2s}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat{background:#fff;padding:12px 16px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.stat h3{margin:0;font-size:13px;color:#666}.stat strong{display:block;font-size:24px;margin-top:2px}
+.main-grid{display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start}
+.main-grid .card{margin-bottom:0}
+.search-box{width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;margin-bottom:8px}
+.filters{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
+.filters button{font-size:12px;padding:6px 10px;opacity:.55}.filters button.on{opacity:1}
+.student-list{max-height:640px;overflow-y:auto;border:1px solid #ddd;border-radius:8px}
+.student-item{padding:10px 12px;border-bottom:1px solid #eee;cursor:pointer}
+.student-item:hover{background:#f1f5f9}.student-item.active{background:#dbeafe}
+.student-name{font-weight:bold}.student-meta{font-size:12px;color:#666;margin-top:3px}
+.status{display:inline-block;margin-top:5px;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:bold}
+.s-unchecked{background:#e5e7eb;color:#374151}.s-verified{background:#dcfce7;color:#166534}.s-corrected{background:#fef3c7;color:#92400e}
+.field{border:1px solid #ddd;border-left:5px solid #16a34a;border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.field.incorrect{border-left-color:#dc2626}
+.field-header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.field-title{font-weight:bold;font-size:14px}
+.seg{display:flex}.seg button{padding:5px 10px;font-size:12px;background:#cbd5e1;color:#334155;border-radius:0}
+.seg button:first-child{border-radius:6px 0 0 6px}.seg button:last-child{border-radius:0 6px 6px 0}
+.seg .on-c{background:#16a34a;color:#fff}.seg .on-i{background:#dc2626;color:#fff}
+.field input{width:100%;padding:9px;border:1px solid #ccc;border-radius:5px;background:#f8fafc}
+.field input.editable{background:#fff;border-color:#f59e0b}
+.hint{font-size:12px;color:#64748b;margin:4px 0 12px}
+.actions{position:sticky;bottom:0;background:#fff;padding:10px 0 0;display:flex;gap:8px;flex-wrap:wrap}
+.actions .btn-success{flex:1;min-width:160px;padding:12px}
+.exports{display:flex;flex-wrap:wrap;gap:8px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+#toast.show{opacity:1}
+@media(max-width:900px){.main-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.student-list{max-height:240px}}
 </style>
 </head>
-
 <body>
-
 <div class="container">
+<h1>Student Data Verification</h1>
+<div class="subtitle">Name your task → upload CSV → check students → download reports. Everything autosaves in this browser.</div>
 
-    <h1>Student Data Verification</h1>
-    <div class="subtitle">
-        Upload CSV → Check students → Correct mistakes → Verify → Download reports
+<!-- TASKS SCREEN -->
+<div id="taskScreen">
+  <div class="card">
+    <h3 style="margin-top:0">Start a new task</h3>
+    <div class="row">
+      <input type="text" id="taskName" class="task-input" placeholder="Task name (e.g. Grade 8 – Term 1 check)">
+      <input type="file" id="csvFile" accept=".csv">
+      <button class="btn-primary" onclick="createTask()">Start task</button>
     </div>
-
-    <!-- UPLOAD -->
-    <div class="card">
-
-        <h3>1. Upload Original CSV</h3>
-
-        <input type="file" id="csvFile" accept=".csv">
-
-        <br>
-
-        <button class="btn-primary" onclick="loadCSV()">
-            Load CSV
-        </button>
-
-        <button class="btn-success" onclick="startChecking()" id="startBtn" disabled>
-            Start Checking
-        </button>
-
-        <div id="fileInfo"></div>
-
-    </div>
-
-
-    <!-- STATS -->
-    <div id="statsSection" class="hidden">
-
-        <div class="stats">
-
-            <div class="stat">
-                <h3>Total Students</h3>
-                <strong id="totalCount">0</strong>
-            </div>
-
-            <div class="stat">
-                <h3>Unchecked</h3>
-                <strong id="uncheckedCount">0</strong>
-            </div>
-
-            <div class="stat">
-                <h3>Verified</h3>
-                <strong id="verifiedCount">0</strong>
-            </div>
-
-            <div class="stat">
-                <h3>Corrected</h3>
-                <strong id="correctedCount">0</strong>
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- CHECKING AREA -->
-    <div id="checkingSection" class="hidden">
-
-        <div class="main-grid">
-
-            <!-- LEFT -->
-            <div class="card">
-
-                <h3>Students</h3>
-
-                <input
-                    type="text"
-                    id="searchInput"
-                    class="search-box"
-                    placeholder="Search student name or ID..."
-                    oninput="renderStudentList()"
-                >
-
-                <div class="filter-buttons">
-
-                    <button
-                        class="btn-secondary"
-                        onclick="setFilter('all')">
-                        All
-                    </button>
-
-                    <button
-                        class="btn-secondary"
-                        onclick="setFilter('unchecked')">
-                        Unchecked
-                    </button>
-
-                    <button
-                        class="btn-success"
-                        onclick="setFilter('verified')">
-                        Verified
-                    </button>
-
-                    <button
-                        class="btn-warning"
-                        onclick="setFilter('corrected')">
-                        Corrected
-                    </button>
-
-                </div>
-
-                <div id="studentList" class="student-list"></div>
-
-            </div>
-
-
-            <!-- RIGHT -->
-            <div class="card">
-
-                <div id="editorEmpty">
-
-                    <h3>Select a student</h3>
-
-                    <p>
-                        Select a student from the list to start verification.
-                    </p>
-
-                </div>
-
-
-                <div id="editor" class="hidden">
-
-                    <h2 id="studentTitle"></h2>
-
-                    <div id="studentMeta"></div>
-
-                    <br>
-
-                    <div class="verification-summary">
-
-                        <strong>Verification Rule:</strong>
-
-                        All fields are considered
-                        <strong>Correct by default</strong>.
-
-                        Only click
-                        <strong>Incorrect</strong>
-                        if you find a mistake.
-
-                    </div>
-
-
-                    <div id="fieldsContainer"></div>
-
-
-                    <div class="top-actions">
-
-                        <button
-                            class="btn-success"
-                            onclick="saveAndVerify()">
-                            ✓ Save & Verify
-                        </button>
-
-                        <button
-                            class="btn-secondary"
-                            onclick="cancelEditing()">
-                            Cancel
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- EXPORTS -->
-    <div id="exportSection" class="card hidden">
-
-        <h3>Download Results</h3>
-
-        <p>
-            Download the verification results as Excel files.
-        </p>
-
-        <div class="export-buttons">
-
-            <button
-                class="btn-danger"
-                onclick="exportIncorrect()">
-                Download Incorrect Details
-            </button>
-
-            <button
-                class="btn-warning"
-                onclick="exportCorrected()">
-                Download Corrected Students
-            </button>
-
-            <button
-                class="btn-primary"
-                onclick="exportComplete()">
-                Download Complete List
-            </button>
-
-            <button
-                class="btn-purple"
-                onclick="exportVerifiedChecks()">
-                Download Verified Checks
-            </button>
-
-            <button
-                class="btn-secondary"
-                onclick="exportProgress()">
-                Download Checking Progress
-            </button>
-
-        </div>
-
-        <div class="notice">
-
-            <strong>Verified Checks</strong> contains every student that
-            has been checked, including whether each individual field was
-            correct or corrected.
-
-        </div>
-
-    </div>
-
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Previous tasks</h3>
+    <div id="taskList"></div>
+  </div>
 </div>
 
+<!-- WORK SCREEN -->
+<div id="workScreen" class="hidden">
+  <div class="topbar">
+    <div class="row">
+      <button class="btn-secondary" onclick="closeTask()">← Tasks</button>
+      <strong id="taskTitle" style="font-size:18px"></strong>
+      <span id="saveState" style="font-size:12px;color:#16a34a"></span>
+    </div>
+    <div class="exports">
+      <button class="btn-success" onclick="exportVerified()">Download Verified Students</button>
+      <button class="btn-purple" onclick="exportVerifiedChecks()">Download Verified Checks</button>
+      <button class="btn-danger" onclick="exportIncorrect()">Incorrect Details</button>
+      <button class="btn-warning" onclick="exportCorrected()">Corrected Students</button>
+      <button class="btn-primary" onclick="exportComplete()">Complete List</button>
+      <button class="btn-secondary" onclick="exportProgress()">Progress</button>
+    </div>
+  </div>
+  <div class="progress"><div id="bar"></div></div>
+  <div class="stats">
+    <div class="stat"><h3>Total</h3><strong id="cTotal">0</strong></div>
+    <div class="stat"><h3>Unchecked</h3><strong id="cUnchecked">0</strong></div>
+    <div class="stat"><h3>Verified</h3><strong id="cVerified">0</strong></div>
+    <div class="stat"><h3>Corrected</h3><strong id="cCorrected">0</strong></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card">
+      <input type="text" id="searchInput" class="search-box" placeholder="Search name or ID…">
+      <div class="filters" id="filters">
+        <button class="btn-secondary on" data-f="all">All</button>
+        <button class="btn-secondary" data-f="unchecked">Unchecked</button>
+        <button class="btn-success" data-f="verified">Verified</button>
+        <button class="btn-warning" data-f="corrected">Corrected</button>
+      </div>
+      <div id="studentList" class="student-list"></div>
+    </div>
+
+    <div class="card" id="editorCard">
+      <div id="editorEmpty"><h3>No student selected</h3></div>
+      <div id="editor" class="hidden">
+        <h2 id="studentTitle" style="margin:0 0 4px"></h2>
+        <div id="studentMeta" style="color:#666;font-size:13px"></div>
+        <div class="hint">All fields count as correct unless you press <b>Incorrect</b> (or double-click a field) and edit it. <b>Enter</b> saves &amp; goes to the next unchecked student. <b>Alt + ←/→</b> moves between students.</div>
+        <div id="fieldsContainer"></div>
+        <div class="actions">
+          <button class="btn-success" onclick="saveAndVerify()">✓ Save &amp; Verify → Next</button>
+          <button class="btn-secondary" onclick="renderFields()">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div id="toast"></div>
 
 <script>
-
-let originalHeaders = [];
-let students = [];
-
-let currentStudentIndex = null;
-let currentFilter = "all";
-
-
-// ============================================================
-// FIELD CONFIGURATION
-// ============================================================
-
+// ---------- CONFIG ----------
+// Section removed. Order here = order in the editor and in the Verified Students Excel.
 const fields = {
-
-    studentName: {
-        label: "Student Name",
-        candidates: [
-            "Student Name",
-            "Name",
-            "Student"
-        ]
-    },
-
-    guardianName: {
-        label: "Guardian Name",
-        candidates: [
-            "Guardian Name",
-            "Parent Name",
-            "Father Name",
-            "Mother Name",
-            "Guardian"
-        ]
-    },
-
-    studentContact: {
-        label: "Student Contact",
-        candidates: [
-            "Student Contact",
-            "Student Phone",
-            "Student Mobile",
-            "Student Contact Number",
-            "Contact"
-        ]
-    },
-
-    guardianContact: {
-        label: "Guardian Contact",
-        candidates: [
-            "Guardian Contact",
-            "Guardian Phone",
-            "Guardian Mobile",
-            "Guardian Contact Number",
-            "Parent Contact",
-            "Parent Phone",
-            "Parent Mobile",
-            "Father Contact",
-            "Mother Contact"
-        ]
-    },
-
-    studentAddress: {
-        label: "Student Address",
-        candidates: [
-            "Student Address",
-            "Address"
-        ]
-    },
-
-    guardianAddress: {
-        label: "Guardian Address",
-        candidates: [
-            "Guardian Address",
-            "Parent Address",
-            "Father Address",
-            "Mother Address"
-        ]
-    },
-
-    dob: {
-        label: "DOB",
-        candidates: [
-            "DOB",
-            "Date of Birth",
-            "Birth Date"
-        ]
-    },
-
-    gender: {
-        label: "Gender",
-        candidates: [
-            "Gender",
-            "Sex"
-        ]
-    },
-
-    grade: {
-        label: "Grade",
-        candidates: [
-            "Grade",
-            "Class"
-        ]
-    },
-
-    section: {
-        label: "Section",
-        candidates: [
-            "Section",
-            "Sec"
-        ]
-    }
-
+  studentName:     {label:"Name",             candidates:["Student Name","Name","Student"]},
+  guardianName:    {label:"Guardian Name",    candidates:["Guardian Name","Parent Name","Father Name","Mother Name","Guardian"]},
+  studentAddress:  {label:"Student Address",  candidates:["Student Address","Address"]},
+  guardianAddress: {label:"Guardian Address", candidates:["Guardian Address","Parent Address","Father Address","Mother Address"]},
+  guardianContact: {label:"Guardian Contact", candidates:["Guardian Contact","Guardian Phone","Guardian Mobile","Guardian Contact Number","Parent Contact","Parent Phone","Parent Mobile","Father Contact","Mother Contact"]},
+  dob:             {label:"DOB",              candidates:["DOB","Date of Birth","Birth Date"]},
+  grade:           {label:"Grade",            candidates:["Grade","Class"]}
 };
+const idCandidates = ["Student ID","ID","StudentID","Roll No","Roll Number","Roll"];
+const FKEYS = Object.keys(fields);
 
+// ---------- STATE ----------
+let task = null;          // {id,name,headers,students,current,updatedAt}
+let cur = null;           // current student index
+let filter = "all";
+let draftStatus = {};     // field -> "correct" | "incorrect" (for the open student)
+let saveTimer = null;
 
-// ============================================================
-// NORMALIZE HEADER
-// ============================================================
+// ---------- INDEXEDDB (local persistence) ----------
+let dbp;
+function db(){
+  return dbp || (dbp = new Promise((res, rej) => {
+    const r = indexedDB.open("student-verification", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("tasks", {keyPath:"id"});
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  }));
+}
+async function idb(mode, fn){
+  const d = await db();
+  return new Promise((res, rej) => {
+    const tx = d.transaction("tasks", mode);
+    const req = fn(tx.objectStore("tasks"));
+    tx.oncomplete = () => res(req && req.result);
+    tx.onerror = () => rej(tx.error);
+  });
+}
+const putTask = t => idb("readwrite", s => s.put(t));
+const getTask = id => idb("readonly", s => s.get(id));
+const allTasks = () => idb("readonly", s => s.getAll());
+const delTask = id => idb("readwrite", s => s.delete(id));
 
-function normalizeHeader(value) {
-
-    return String(value || "")
-        .toLowerCase()
-        .trim()
-        .replace(/[’']/g, "")
-        .replace(/[^a-z0-9]/g, "");
-
+function queueSave(){
+  const el = document.getElementById("saveState");
+  el.textContent = "Saving…";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    task.updatedAt = Date.now();
+    task.current = cur;
+    try { await putTask(task); el.textContent = "✓ Saved locally"; }
+    catch(e){ el.textContent = "⚠ Could not save"; console.error(e); }
+  }, 150);
 }
 
+// ---------- HELPERS ----------
+const esc = v => String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+const norm = v => String(v || "").toLowerCase().replace(/[’']/g,"").replace(/[^a-z0-9]/g,"");
+const $ = id => document.getElementById(id);
+function findHeader(headers, cands){
+  const n = headers.map(norm);
+  for (const c of cands){ const i = n.indexOf(norm(c)); if (i !== -1) return headers[i]; }
+  return null;
+}
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 1400);
+}
+const sid = s => { const h = findHeader(task.headers, idCandidates); return h ? s.original[h] : ""; };
 
-// ============================================================
-// FIND HEADER
-// ============================================================
-
-function findHeader(headers, candidates) {
-
-    const normalizedHeaders = headers.map(normalizeHeader);
-
-    for (const candidate of candidates) {
-
-        const index =
-            normalizedHeaders.indexOf(
-                normalizeHeader(candidate)
-            );
-
-        if (index !== -1) {
-            return headers[index];
-        }
-    }
-
-    return null;
+function parseCSV(text){
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const rows = []; let row = [], v = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i], n = text[i+1];
+    if (c === '"' && q && n === '"'){ v += '"'; i++; }
+    else if (c === '"') q = !q;
+    else if (c === "," && !q){ row.push(v); v = ""; }
+    else if ((c === "\n" || c === "\r") && !q){
+      if (c === "\r" && n === "\n") i++;
+      row.push(v); v = ""; rows.push(row); row = [];
+    } else v += c;
+  }
+  if (v !== "" || row.length){ row.push(v); rows.push(row); }
+  return rows;
 }
 
-
-// ============================================================
-// LOAD CSV
-// ============================================================
-
-function loadCSV() {
-
-    const file =
-        document.getElementById("csvFile").files[0];
-
-    if (!file) {
-
-        alert("Please select a CSV file.");
-
-        return;
-    }
-
-
-    const reader = new FileReader();
-
-
-    reader.onload = function(e) {
-
-        try {
-
-            const text = e.target.result;
-
-            const rows = parseCSV(text);
-
-            if (rows.length < 2) {
-
-                alert("CSV does not contain enough data.");
-
-                return;
-            }
-
-
-            originalHeaders = rows[0];
-
-            const dataRows = rows.slice(1);
-
-
-            students = dataRows
-                .filter(row =>
-                    row.some(value =>
-                        String(value || "").trim() !== ""
-                    )
-                )
-                .map((row, index) => {
-
-                    const original = {};
-
-                    originalHeaders.forEach((header, i) => {
-
-                        original[header] =
-                            row[i] !== undefined
-                                ? row[i]
-                                : "";
-
-                    });
-
-
-                    const values = {};
-
-                    Object.keys(fields).forEach(field => {
-
-                        const header =
-                            findHeader(
-                                originalHeaders,
-                                fields[field].candidates
-                            );
-
-                        values[field] =
-                            header
-                                ? original[header]
-                                : "";
-
-                    });
-
-
-                    // IMPORTANT:
-                    // EVERY FIELD STARTS AS CORRECT
-
-                    const fieldStatus = {};
-
-                    Object.keys(fields).forEach(field => {
-
-                        fieldStatus[field] = "correct";
-
-                    });
-
-
-                    return {
-
-                        internalId: index + 1,
-
-                        original: original,
-
-                        values: values,
-
-                        fieldStatus: fieldStatus,
-
-                        corrections: {},
-
-                        status: "unchecked",
-
-                        checkedAt: ""
-
-                    };
-
-                });
-
-
-            document.getElementById("fileInfo").innerHTML =
-                `<p>
-                    <strong>${file.name}</strong>
-                    loaded successfully.
-                    ${students.length} students found.
-                </p>`;
-
-
-            document.getElementById("startBtn").disabled = false;
-
-        }
-
-        catch(error) {
-
-            console.error(error);
-
-            alert(
-                "Could not read CSV. Please check the file format."
-            );
-
-        }
-
-    };
-
-
-    reader.readAsText(file);
-
+// ---------- TASK SCREEN ----------
+async function renderTasks(){
+  const list = (await allTasks()).sort((a,b) => b.updatedAt - a.updatedAt);
+  const box = $("taskList");
+  if (!list.length){ box.innerHTML = '<div style="color:#777">No saved tasks yet. Start one above.</div>'; return; }
+  box.innerHTML = list.map(t => {
+    const done = t.students.filter(s => s.status !== "unchecked").length;
+    return `<div class="task"><div><strong>${esc(t.name)}</strong>
+      <small>${done} / ${t.students.length} checked · last edited ${new Date(t.updatedAt).toLocaleString()}</small></div>
+      <div class="row"><button class="btn-primary" onclick="openTask('${t.id}')">Open</button>
+      <button class="btn-danger" onclick="removeTask('${t.id}')">Delete</button></div></div>`;
+  }).join("");
 }
 
-
-// ============================================================
-// CSV PARSER
-// ============================================================
-
-function parseCSV(text) {
-
-    const rows = [];
-
-    let row = [];
-
-    let value = "";
-
-    let insideQuotes = false;
-
-
-    for (let i = 0; i < text.length; i++) {
-
-        const char = text[i];
-
-        const next = text[i + 1];
-
-
-        if (char === '"' && insideQuotes && next === '"') {
-
-            value += '"';
-
-            i++;
-
-        }
-
-        else if (char === '"') {
-
-            insideQuotes = !insideQuotes;
-
-        }
-
-        else if (char === "," && !insideQuotes) {
-
-            row.push(value);
-
-            value = "";
-
-        }
-
-        else if (
-            (char === "\n" || char === "\r")
-            && !insideQuotes
-        ) {
-
-            if (char === "\r" && next === "\n") {
-                i++;
-            }
-
-            row.push(value);
-
-            value = "";
-
-            rows.push(row);
-
-            row = [];
-
-        }
-
-        else {
-
-            value += char;
-
-        }
-
-    }
-
-
-    if (value !== "" || row.length > 0) {
-
-        row.push(value);
-
-        rows.push(row);
-
-    }
-
-
-    return rows;
-
-}
-
-
-// ============================================================
-// START CHECKING
-// ============================================================
-
-function startChecking() {
-
-    if (!students.length) {
-
-        alert("Load a CSV first.");
-
-        return;
-    }
-
-
-    document
-        .getElementById("statsSection")
-        .classList.remove("hidden");
-
-    document
-        .getElementById("checkingSection")
-        .classList.remove("hidden");
-
-    document
-        .getElementById("exportSection")
-        .classList.remove("hidden");
-
-
-    updateStats();
-
-    renderStudentList();
-
-
-    if (currentStudentIndex === null) {
-
-        selectStudent(0);
-
-    }
-
-}
-
-
-// ============================================================
-// FILTER
-// ============================================================
-
-function setFilter(filter) {
-
-    currentFilter = filter;
-
-    renderStudentList();
-
-}
-
-
-// ============================================================
-// FILTER STUDENTS
-// ============================================================
-
-function getFilteredStudents() {
-
-    const search =
-        document
-            .getElementById("searchInput")
-            .value
-            .toLowerCase()
-            .trim();
-
-
-    return students
-        .map((student, index) => ({
-            student,
-            index
-        }))
-        .filter(item => {
-
-            const student = item.student;
-
-
-            const name =
-                String(
-                    student.values.studentName || ""
-                ).toLowerCase();
-
-
-            const id =
-                String(
-                    getStudentID(student) || ""
-                ).toLowerCase();
-
-
-            const matchesSearch =
-                !search ||
-                name.includes(search) ||
-                id.includes(search);
-
-
-            let matchesFilter = true;
-
-
-            if (currentFilter === "unchecked") {
-
-                matchesFilter =
-                    student.status === "unchecked";
-
-            }
-
-            else if (currentFilter === "verified") {
-
-                matchesFilter =
-                    student.status === "verified";
-
-            }
-
-            else if (currentFilter === "corrected") {
-
-                matchesFilter =
-                    student.status === "corrected";
-
-            }
-
-
-            return matchesSearch && matchesFilter;
-
-        });
-
-}
-
-
-// ============================================================
-// RENDER STUDENT LIST
-// ============================================================
-
-function renderStudentList() {
-
-    const container =
-        document.getElementById("studentList");
-
-
-    container.innerHTML = "";
-
-
-    const filtered =
-        getFilteredStudents();
-
-
-    if (!filtered.length) {
-
-        container.innerHTML =
-            `<div style="padding:15px;color:#777">
-                No students found.
-            </div>`;
-
-        return;
-
-    }
-
-
-    filtered.forEach(item => {
-
-        const student = item.student;
-
-        const index = item.index;
-
-
-        const div =
-            document.createElement("div");
-
-
-        div.className =
-            "student-item" +
-            (
-                index === currentStudentIndex
-                    ? " active"
-                    : ""
-            );
-
-
-        let statusText = "Unchecked";
-
-        let statusClass = "status-unchecked";
-
-
-        if (student.status === "verified") {
-
-            statusText = "Verified";
-
-            statusClass = "status-verified";
-
-        }
-
-        else if (student.status === "corrected") {
-
-            statusText = "Corrected";
-
-            statusClass = "status-corrected";
-
-        }
-
-
-        div.innerHTML = `
-
-            <div class="student-name">
-                ${escapeHTML(
-                    student.values.studentName ||
-                    "Unnamed Student"
-                )}
-            </div>
-
-            <div class="student-meta">
-
-                ID:
-                ${escapeHTML(
-                    String(getStudentID(student) || "")
-                )}
-
-                &nbsp; | &nbsp;
-
-                Grade:
-                ${escapeHTML(
-                    student.values.grade || ""
-                )}
-
-                ${student.values.section
-                    ? " - " +
-                      escapeHTML(student.values.section)
-                    : ""
-                }
-
-            </div>
-
-            <span class="status ${statusClass}">
-                ${statusText}
-            </span>
-        `;
-
-
-        div.onclick =
-            () => selectStudent(index);
-
-
-        container.appendChild(div);
-
+function createTask(){
+  const name = $("taskName").value.trim();
+  const file = $("csvFile").files[0];
+  if (!name) return alert("Please enter a task name.");
+  if (!file) return alert("Please select a CSV file.");
+  const r = new FileReader();
+  r.onload = async e => {
+    const rows = parseCSV(e.target.result);
+    if (rows.length < 2) return alert("CSV does not contain enough data.");
+    const headers = rows[0];
+    const students = rows.slice(1).filter(r => r.some(v => String(v || "").trim() !== "")).map((row, i) => {
+      const original = {}; headers.forEach((h, k) => original[h] = row[k] !== undefined ? row[k] : "");
+      const values = {};
+      FKEYS.forEach(f => { const h = findHeader(headers, fields[f].candidates); values[f] = h ? original[h] : ""; });
+      return {original, values, status:"unchecked", checkedAt:"", fieldStatus:{}, corrections:{}};
     });
-
+    task = {id:"t" + Date.now(), name, headers, students, current:0, updatedAt:Date.now()};
+    await putTask(task);
+    $("taskName").value = ""; $("csvFile").value = "";
+    showWork();
+  };
+  r.readAsText(file);
 }
 
-
-// ============================================================
-// SELECT STUDENT
-// ============================================================
-
-function selectStudent(index) {
-
-    currentStudentIndex = index;
-
-
-    const student =
-        students[index];
-
-
-    document
-        .getElementById("editorEmpty")
-        .classList.add("hidden");
-
-
-    document
-        .getElementById("editor")
-        .classList.remove("hidden");
-
-
-    document.getElementById("studentTitle").textContent =
-        student.values.studentName ||
-        "Unnamed Student";
-
-
-    document.getElementById("studentMeta").innerHTML = `
-
-        <strong>ID:</strong>
-        ${escapeHTML(
-            String(getStudentID(student) || "")
-        )}
-
-        &nbsp;&nbsp;
-
-        <strong>Grade:</strong>
-        ${escapeHTML(student.values.grade || "")}
-
-        &nbsp;&nbsp;
-
-        <strong>Section:</strong>
-        ${escapeHTML(student.values.section || "")}
-
-    `;
-
-
-    renderFields();
-
-    renderStudentList();
-
+async function openTask(id){ task = await getTask(id); showWork(); }
+async function removeTask(id){
+  if (!confirm("Delete this task and all its progress from this browser?")) return;
+  await delTask(id); renderTasks();
+}
+function closeTask(){
+  clearTimeout(saveTimer); task.current = cur; task.updatedAt = Date.now();
+  putTask(task).then(() => { task = null; cur = null;
+    $("workScreen").classList.add("hidden"); $("taskScreen").classList.remove("hidden"); renderTasks(); });
 }
 
-
-// ============================================================
-// RENDER FIELDS
-// ============================================================
-
-function renderFields() {
-
-    const student =
-        students[currentStudentIndex];
-
-
-    const container =
-        document.getElementById("fieldsContainer");
-
-
-    container.innerHTML = "";
-
-
-    Object.keys(fields).forEach(field => {
-
-        const config = fields[field];
-
-        const value =
-            student.values[field] || "";
-
-
-        // DEFAULT = CORRECT
-
-        const status =
-            student.fieldStatus[field] || "correct";
-
-
-        const div =
-            document.createElement("div");
-
-
-        div.className =
-            "field " +
-            (
-                status === "incorrect"
-                    ? "incorrect"
-                    : "correct"
-            );
-
-
-        div.id =
-            "field-" + field;
-
-
-        const disabled =
-            status !== "incorrect"
-                ? "disabled"
-                : "";
-
-
-        div.innerHTML = `
-
-            <div class="field-header">
-
-                <div class="field-title">
-
-                    ${escapeHTML(config.label)}
-
-                </div>
-
-
-                <div class="field-actions">
-
-                    <button
-                        class="btn-success"
-                        onclick="markCorrect('${field}')">
-
-                        ✓ Correct
-
-                    </button>
-
-
-                    <button
-                        class="btn-danger"
-                        onclick="markIncorrect('${field}')">
-
-                        ✎ Incorrect
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <input
-                type="text"
-                id="input-${field}"
-                value="${escapeAttribute(value)}"
-                ${disabled}
-            />
-
-        `;
-
-
-        container.appendChild(div);
-
-    });
-
+function showWork(){
+  $("taskScreen").classList.add("hidden"); $("workScreen").classList.remove("hidden");
+  $("taskTitle").textContent = task.name; $("saveState").textContent = "✓ Saved locally";
+  filter = "all"; setFilterUI(); $("searchInput").value = "";
+  cur = null; updateStats(); renderList();
+  const start = task.current != null && task.students[task.current] ? task.current : 0;
+  selectStudent(start, false);
 }
 
+// ---------- LIST ----------
+function setFilterUI(){ document.querySelectorAll("#filters button").forEach(b => b.classList.toggle("on", b.dataset.f === filter)); }
+$("filters").addEventListener("click", e => { const f = e.target.dataset.f; if (f){ filter = f; setFilterUI(); renderList(); } });
+$("searchInput").addEventListener("input", renderList);
 
-// ============================================================
-// MARK CORRECT
-// ============================================================
+function renderList(){
+  const q = $("searchInput").value.toLowerCase().trim();
+  const items = [];
+  task.students.forEach((s, i) => {
+    if (filter !== "all" && s.status !== filter) return;
+    if (q && !(String(s.values.studentName).toLowerCase().includes(q) || String(sid(s)).toLowerCase().includes(q))) return;
+    items.push(i);
+  });
+  const shown = items.slice(0, 300);
+  $("studentList").innerHTML = shown.length ? shown.map(i => {
+    const s = task.students[i];
+    return `<div class="student-item${i === cur ? " active" : ""}" data-i="${i}">
+      <div class="student-name">${esc(s.values.studentName || "Unnamed")}</div>
+      <div class="student-meta">ID: ${esc(sid(s))} | Grade: ${esc(s.values.grade)}</div>
+      <span class="status s-${s.status}">${s.status[0].toUpperCase() + s.status.slice(1)}</span></div>`;
+  }).join("") + (items.length > 300 ? `<div style="padding:10px;color:#777;font-size:12px">Showing 300 of ${items.length}. Use search to narrow.</div>` : "")
+    : '<div style="padding:15px;color:#777">No students found.</div>';
+}
+$("studentList").addEventListener("click", e => {
+  const el = e.target.closest(".student-item");
+  if (el) selectStudent(+el.dataset.i, true);
+});
 
-function markCorrect(field) {
-
-    const student =
-        students[currentStudentIndex];
-
-
-    student.fieldStatus[field] =
-        "correct";
-
-
-    const input =
-        document.getElementById(
-            "input-" + field
-        );
-
-
-    input.disabled = true;
-
-    input.classList.remove("editable");
-
-
-    document
-        .getElementById("field-" + field)
-        .classList.remove("incorrect");
-
-
-    document
-        .getElementById("field-" + field)
-        .classList.add("correct");
-
+// ---------- EDITOR ----------
+function selectStudent(i, scroll){
+  if (i < 0 || i >= task.students.length) return;
+  cur = i; const s = task.students[i];
+  $("editorEmpty").classList.add("hidden"); $("editor").classList.remove("hidden");
+  $("studentTitle").textContent = s.values.studentName || "Unnamed Student";
+  $("studentMeta").innerHTML = `<b>ID:</b> ${esc(sid(s))} &nbsp; <b>Status:</b> ${s.status}`;
+  renderFields(); renderList();
+  const active = document.querySelector(".student-item.active");
+  if (active) active.scrollIntoView({block:"nearest"});
+  if (scroll && innerWidth <= 900) $("editorCard").scrollIntoView({behavior:"smooth"});
+  queueSave();
 }
 
+function renderFields(){
+  const s = task.students[cur];
+  draftStatus = {};
+  $("fieldsContainer").innerHTML = FKEYS.map(f => {
+    draftStatus[f] = "correct";
+    return `<div class="field" id="field-${f}">
+      <div class="field-header"><div class="field-title">${esc(fields[f].label)}</div>
+        <div class="seg"><button class="on-c" data-f="${f}" data-m="correct">✓ Correct</button>
+        <button data-f="${f}" data-m="incorrect">✎ Incorrect</button></div></div>
+      <input type="text" id="input-${f}" value="${esc(s.values[f])}" readonly data-f="${f}"></div>`;
+  }).join("");
+}
+$("fieldsContainer").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (b) setMode(b.dataset.f, b.dataset.m);
+});
+$("fieldsContainer").addEventListener("dblclick", e => {
+  if (e.target.matches("input")) setMode(e.target.dataset.f, "incorrect");
+});
+$("fieldsContainer").addEventListener("keydown", e => {
+  if (e.key === "Enter"){ e.preventDefault(); saveAndVerify(); }
+});
 
-// ============================================================
-// MARK INCORRECT
-// ============================================================
-
-function markIncorrect(field) {
-
-    const student =
-        students[currentStudentIndex];
-
-
-    student.fieldStatus[field] =
-        "incorrect";
-
-
-    const input =
-        document.getElementById(
-            "input-" + field
-        );
-
-
-    input.disabled = false;
-
-    input.classList.add("editable");
-
-    input.focus();
-
-
-    document
-        .getElementById("field-" + field)
-        .classList.remove("correct");
-
-
-    document
-        .getElementById("field-" + field)
-        .classList.add("incorrect");
-
+function setMode(f, mode){
+  draftStatus[f] = mode;
+  const box = $("field-" + f), input = $("input-" + f);
+  const bs = box.querySelectorAll("button");
+  const bad = mode === "incorrect";
+  box.classList.toggle("incorrect", bad);
+  bs[0].className = bad ? "" : "on-c"; bs[1].className = bad ? "on-i" : "";
+  input.readOnly = !bad; input.classList.toggle("editable", bad);
+  if (bad){ input.focus(); input.select(); }
+  else input.value = task.students[cur].values[f]; // revert if marked correct again
 }
 
-
-// ============================================================
-// SAVE & VERIFY
-// ============================================================
-
-function saveAndVerify() {
-
-    const student =
-        students[currentStudentIndex];
-
-
-    // Get latest input values
-
-    Object.keys(fields).forEach(field => {
-
-        const input =
-            document.getElementById(
-                "input-" + field
-            );
-
-
-        if (input) {
-
-            student.values[field] =
-                input.value.trim();
-
-        }
-
-    });
-
-
-    // Determine whether any field was actually changed
-
-    let hasCorrection = false;
-
-
-    student.corrections = {};
-
-
-    Object.keys(fields).forEach(field => {
-
-        const originalValue =
-            String(
-                student.values[field] === undefined
-                    ? ""
-                    : student.values[field]
-            );
-
-
-        // Find original value for this field
-
-        const header =
-            findHeader(
-                originalHeaders,
-                fields[field].candidates
-            );
-
-
-        const oldValue =
-            header
-                ? String(
-                    student.original[header] || ""
-                ).trim()
-                : "";
-
-
-        const newValue =
-            String(
-                student.values[field] || ""
-            ).trim();
-
-
-        if (oldValue !== newValue) {
-
-            hasCorrection = true;
-
-
-            student.corrections[field] = {
-
-                field:
-                    fields[field].label,
-
-                original:
-                    oldValue,
-
-                corrected:
-                    newValue
-
-            };
-
-        }
-
-    });
-
-
-    // Student status
-
-    if (hasCorrection) {
-
-        student.status = "corrected";
-
-    }
-
-    else {
-
-        student.status = "verified";
-
-    }
-
-
-    student.checkedAt =
-        new Date().toLocaleString();
-
-
-    updateStats();
-
-    renderStudentList();
-
-
-    alert(
-        hasCorrection
-            ? "Student saved and marked as CORRECTED."
-            : "Student saved and marked as VERIFIED."
-    );
-
+function saveAndVerify(){
+  const s = task.students[cur];
+  // Original (as loaded) values for comparison
+  s.corrections = {}; s.fieldStatus = {};
+  FKEYS.forEach(f => {
+    const h = findHeader(task.headers, fields[f].candidates);
+    const oldV = h ? String(s.original[h] || "").trim() : "";
+    const input = $("input-" + f);
+    const newV = draftStatus[f] === "incorrect" ? input.value.trim() : String(s.values[f] || "").trim();
+    s.values[f] = newV;
+    if (oldV !== newV){
+      s.corrections[f] = {field:fields[f].label, original:oldV, corrected:newV};
+      s.fieldStatus[f] = "corrected";
+    } else s.fieldStatus[f] = "correct";
+  });
+  s.status = Object.keys(s.corrections).length ? "corrected" : "verified";
+  s.checkedAt = new Date().toLocaleString();
+  updateStats();
+  toast(s.status === "corrected" ? "Saved as Corrected" : "Saved as Verified");
+  // jump to next unchecked, else next student
+  let next = -1;
+  for (let k = 1; k <= task.students.length; k++){
+    const i = (cur + k) % task.students.length;
+    if (task.students[i].status === "unchecked"){ next = i; break; }
+  }
+  if (next === -1) next = Math.min(cur + 1, task.students.length - 1);
+  selectStudent(next, false);
 }
 
+document.addEventListener("keydown", e => {
+  if (!task || cur == null || $("workScreen").classList.contains("hidden")) return;
+  if (e.altKey && e.key === "ArrowRight"){ e.preventDefault(); selectStudent(cur + 1, false); }
+  if (e.altKey && e.key === "ArrowLeft"){ e.preventDefault(); selectStudent(cur - 1, false); }
+});
 
-// ============================================================
-// CANCEL
-// ============================================================
-
-function cancelEditing() {
-
-    if (currentStudentIndex !== null) {
-
-        renderFields();
-
-    }
-
+function updateStats(){
+  const c = {unchecked:0, verified:0, corrected:0};
+  task.students.forEach(s => c[s.status]++);
+  $("cTotal").textContent = task.students.length;
+  $("cUnchecked").textContent = c.unchecked; $("cVerified").textContent = c.verified; $("cCorrected").textContent = c.corrected;
+  $("bar").style.width = (task.students.length ? (100 - c.unchecked / task.students.length * 100) : 0) + "%";
 }
 
+// ---------- EXPORTS ----------
+function download(data, name){
+  if (!data.length) return alert("Nothing to export yet.");
+  const ws = XLSX.utils.json_to_sheet(data), wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Data");
+  XLSX.writeFile(wb, task.name.replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "_") + "_" + name);
+}
+const checked = () => task.students.filter(s => s.status !== "unchecked");
 
-// ============================================================
-// UPDATE STATS
-// ============================================================
-
-function updateStats() {
-
-    const total =
-        students.length;
-
-
-    const unchecked =
-        students.filter(
-            s => s.status === "unchecked"
-        ).length;
-
-
-    const verified =
-        students.filter(
-            s => s.status === "verified"
-        ).length;
-
-
-    const corrected =
-        students.filter(
-            s => s.status === "corrected"
-        ).length;
-
-
-    document.getElementById("totalCount").textContent =
-        total;
-
-
-    document.getElementById("uncheckedCount").textContent =
-        unchecked;
-
-
-    document.getElementById("verifiedCount").textContent =
-        verified;
-
-
-    document.getElementById("correctedCount").textContent =
-        corrected;
-
+// Verified students: exactly Name, Guardian Name, Student Address, Guardian Address, Guardian Contact, DOB, Grade
+function exportVerified(){
+  download(checked().map(s => {
+    const r = {}; FKEYS.forEach(f => r[fields[f].label] = s.values[f] || ""); return r;
+  }), "Verified_Students.xlsx");
+}
+function exportVerifiedChecks(){
+  download(checked().map(s => {
+    const r = {"Student ID": sid(s), "Overall Status": s.status === "corrected" ? "Corrected" : "Verified", "Checked At": s.checkedAt};
+    FKEYS.forEach(f => r[fields[f].label + " Status"] = s.fieldStatus[f] === "corrected" ? "Corrected" : "Correct");
+    FKEYS.forEach(f => r[fields[f].label] = s.values[f] || "");
+    return r;
+  }), "Verified_Checks.xlsx");
+}
+function exportIncorrect(){
+  const out = [];
+  task.students.forEach(s => Object.values(s.corrections || {}).forEach(c => out.push({
+    "Student ID": sid(s), "Name": s.values.studentName, "Grade": s.values.grade,
+    "Field": c.field, "Original Detail": c.original, "Corrected Detail": c.corrected})));
+  download(out, "Incorrect_Details.xlsx");
+}
+function fullRow(s){
+  const r = {}; task.headers.forEach(h => r[h] = s.original[h] || "");
+  FKEYS.forEach(f => { const h = findHeader(task.headers, fields[f].candidates); if (h) r[h] = s.values[f] || ""; });
+  return r;
+}
+function exportCorrected(){ download(task.students.filter(s => s.status === "corrected").map(fullRow), "Corrected_Students.xlsx"); }
+function exportComplete(){
+  const u = task.students.filter(s => s.status === "unchecked").length;
+  if (u && !confirm(u + " students are not checked yet. Download the complete list anyway?")) return;
+  download(task.students.map(fullRow), "Complete_Verified_Student_List.xlsx");
+}
+function exportProgress(){
+  download(task.students.map(s => ({"Student ID": sid(s), "Name": s.values.studentName, "Grade": s.values.grade,
+    "Status": s.status[0].toUpperCase() + s.status.slice(1), "Checked At": s.checkedAt})), "Checking_Progress.xlsx");
 }
 
-
-// ============================================================
-// GET STUDENT ID
-// ============================================================
-
-function getStudentID(student) {
-
-    const candidates = [
-        "Student ID",
-        "ID",
-        "StudentID",
-        "Roll No",
-        "Roll Number",
-        "Roll"
-    ];
-
-
-    const header =
-        findHeader(
-            originalHeaders,
-            candidates
-        );
-
-
-    return header
-        ? student.original[header]
-        : "";
-
-}
-
-
-// ============================================================
-// EXPORT 1
-// INCORRECT DETAILS
-// ============================================================
-
-function exportIncorrect() {
-
-    const output = [];
-
-
-    students.forEach(student => {
-
-        Object.keys(student.corrections)
-            .forEach(field => {
-
-                const correction =
-                    student.corrections[field];
-
-
-                output.push({
-
-                    "Student ID":
-                        getStudentID(student),
-
-                    "Student Name":
-                        student.values.studentName,
-
-                    "Grade":
-                        student.values.grade,
-
-                    "Section":
-                        student.values.section,
-
-                    "Field":
-                        correction.field,
-
-                    "Original Detail":
-                        correction.original,
-
-                    "Corrected Detail":
-                        correction.corrected
-
-                });
-
-            });
-
-    });
-
-
-    if (!output.length) {
-
-        alert("No incorrect details found.");
-
-        return;
-
-    }
-
-
-    downloadExcel(
-        output,
-        "Incorrect_Details.xlsx"
-    );
-
-}
-
-
-// ============================================================
-// EXPORT 2
-// CORRECTED STUDENTS ONLY
-// ============================================================
-
-function exportCorrected() {
-
-    const output = [];
-
-
-    students
-        .filter(
-            student =>
-                student.status === "corrected"
-        )
-        .forEach(student => {
-
-            const row = {};
-
-
-            originalHeaders.forEach(header => {
-
-                row[header] =
-                    student.original[header] || "";
-
-            });
-
-
-            Object.keys(fields)
-                .forEach(field => {
-
-                    const header =
-                        findHeader(
-                            originalHeaders,
-                            fields[field].candidates
-                        );
-
-
-                    if (header) {
-
-                        row[header] =
-                            student.values[field] || "";
-
-                    }
-
-                });
-
-
-            output.push(row);
-
-        });
-
-
-    if (!output.length) {
-
-        alert("No corrected students found.");
-
-        return;
-
-    }
-
-
-    downloadExcel(
-        output,
-        "Corrected_Students.xlsx"
-    );
-
-}
-
-
-// ============================================================
-// EXPORT 3
-// COMPLETE LIST
-// ============================================================
-
-function exportComplete() {
-
-    const unchecked =
-        students.filter(
-            s => s.status === "unchecked"
-        ).length;
-
-
-    if (unchecked > 0) {
-
-        const proceed =
-            confirm(
-                `${unchecked} students have not been verified yet.\n\n` +
-                `Do you still want to download the complete list?`
-            );
-
-
-        if (!proceed) return;
-
-    }
-
-
-    const output = [];
-
-
-    students.forEach(student => {
-
-        const row = {};
-
-
-        // Start with original data
-
-        originalHeaders.forEach(header => {
-
-            row[header] =
-                student.original[header] || "";
-
-        });
-
-
-        // Replace mapped fields with verified values
-
-        Object.keys(fields)
-            .forEach(field => {
-
-                const header =
-                    findHeader(
-                        originalHeaders,
-                        fields[field].candidates
-                    );
-
-
-                if (header) {
-
-                    row[header] =
-                        student.values[field] || "";
-
-                }
-
-            });
-
-
-        output.push(row);
-
-    });
-
-
-    downloadExcel(
-        output,
-        "Complete_Verified_Student_List.xlsx"
-    );
-
-}
-
-
-// ============================================================
-// EXPORT 4
-// VERIFIED CHECKS
-// ============================================================
-
-function exportVerifiedChecks() {
-
-    const checkedStudents =
-        students.filter(
-            student =>
-                student.status === "verified" ||
-                student.status === "corrected"
-        );
-
-
-    if (!checkedStudents.length) {
-
-        alert(
-            "No students have been verified yet."
-        );
-
-        return;
-
-    }
-
-
-    const output = [];
-
-
-    checkedStudents.forEach(student => {
-
-        const row = {
-
-            "Student ID":
-                getStudentID(student),
-
-            "Student Name":
-                student.values.studentName,
-
-            "Grade":
-                student.values.grade,
-
-            "Section":
-                student.values.section,
-
-            "Overall Status":
-                student.status === "corrected"
-                    ? "Corrected"
-                    : "Verified",
-
-            "Checked At":
-                student.checkedAt
-
-        };
-
-
-        // Add every field's verification status
-
-        Object.keys(fields).forEach(field => {
-
-            const label =
-                fields[field].label;
-
-
-            const status =
-                student.fieldStatus[field];
-
-
-            row[label + " Status"] =
-                status === "incorrect"
-                    ? "Corrected"
-                    : "Correct";
-
-        });
-
-
-        // Add final values
-
-        Object.keys(fields).forEach(field => {
-
-            row[fields[field].label] =
-                student.values[field] || "";
-
-        });
-
-
-        output.push(row);
-
-    });
-
-
-    downloadExcel(
-        output,
-        "Verified_Checks.xlsx"
-    );
-
-}
-
-
-// ============================================================
-// EXPORT 5
-// CHECKING PROGRESS
-// ============================================================
-
-function exportProgress() {
-
-    const output = [];
-
-
-    students.forEach(student => {
-
-        output.push({
-
-            "Student ID":
-                getStudentID(student),
-
-            "Student Name":
-                student.values.studentName,
-
-            "Grade":
-                student.values.grade,
-
-            "Section":
-                student.values.section,
-
-            "Status":
-                student.status === "unchecked"
-                    ? "Unchecked"
-                    : student.status === "corrected"
-                        ? "Corrected"
-                        : "Verified",
-
-            "Checked At":
-                student.checkedAt
-
-        });
-
-    });
-
-
-    downloadExcel(
-        output,
-        "Checking_Progress.xlsx"
-    );
-
-}
-
-
-// ============================================================
-// EXCEL DOWNLOAD
-// ============================================================
-
-function downloadExcel(data, filename) {
-
-    const worksheet =
-        XLSX.utils.json_to_sheet(data);
-
-
-    const workbook =
-        XLSX.utils.book_new();
-
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        "Data"
-    );
-
-
-    XLSX.writeFile(
-        workbook,
-        filename
-    );
-
-}
-
-
-// ============================================================
-// ESCAPE HTML
-// ============================================================
-
-function escapeHTML(value) {
-
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
-
-
-// ============================================================
-// ESCAPE ATTRIBUTE
-// ============================================================
-
-function escapeAttribute(value) {
-
-    return escapeHTML(value);
-
-}
-
+// keep saving when tab is closed mid-edit
+addEventListener("beforeunload", () => { if (task) { task.current = cur; task.updatedAt = Date.now(); putTask(task); } });
+renderTasks();
 </script>
-
 </body>
 </html>
